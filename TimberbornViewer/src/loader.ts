@@ -2,21 +2,38 @@ import JSZip from 'jszip';
 import type { MapData, ParsedMapData, Entity, Coordinates, BlockObjectComponent, WaterSourceComponent } from './types';
 
 export async function loadTimberFile(file: File): Promise<ParsedMapData> {
+  console.log('📦 Loading .timber file:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+
   // Load ZIP file
+  console.log('  Unzipping file...');
   const zip = new JSZip();
   const zipData = await zip.loadAsync(file);
+  console.log('  ✓ ZIP loaded, files:', Object.keys(zipData.files));
 
   // Extract world.json
   const worldJsonFile = zipData.file('world.json');
   if (!worldJsonFile) {
+    console.error('  ✗ world.json not found in ZIP!');
     throw new Error('world.json not found in .timber file');
   }
 
+  console.log('  Extracting world.json...');
   const worldJsonText = await worldJsonFile.async('text');
+  console.log(`  ✓ world.json extracted (${(worldJsonText.length / 1024 / 1024).toFixed(2)} MB)`);
+
+  console.log('  Parsing JSON...');
   const mapData: MapData = JSON.parse(worldJsonText);
+  console.log('  ✓ JSON parsed successfully');
+  console.log('    Game version:', mapData.GameVersion);
+  console.log('    Map size:', mapData.Singletons.MapSize.Size);
+  console.log('    Total entities:', mapData.Entities.length);
 
   // Parse the data
-  return parseMapData(mapData);
+  console.log('  Processing entities...');
+  const parsed = parseMapData(mapData);
+  console.log('  ✓ Data parsed successfully');
+
+  return parsed;
 }
 
 function parseMapData(mapData: MapData): ParsedMapData {
