@@ -95,21 +95,12 @@ public class TimberbornMapExporter
     {
         var sb = new StringBuilder(grid.Width * grid.Depth);
 
-        // Row-major order: z * width + x
+        // Heights array is legacy 2D terrain - we use TerrainBlocks for 3D voxel terrain
+        // Set to 0 for all positions since we're using full 3D TerrainBlock entities
         for (int z = 0; z < grid.Depth; z++)
         for (int x = 0; x < grid.Width; x++)
         {
-            // Find surface height (highest solid block)
-            int surfaceY = 0;
-            for (int y = 0; y < grid.Height; y++)
-            {
-                if (grid[new Vector3Int(x, y, z)] == VoxelType.Solid)
-                    surfaceY = y;
-            }
-
-            // Clamp to single digit (0-9)
-            int heightValue = Math.Min(surfaceY, 9);
-            sb.Append(heightValue);
+            sb.Append('0');
         }
 
         return sb.ToString();
