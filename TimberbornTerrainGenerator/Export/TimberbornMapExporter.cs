@@ -46,6 +46,11 @@ public class TimberbornMapExporter
         // Build base heightmap array
         string heightsArray = BuildHeightsArray(grid);
 
+        // Build water and moisture arrays (all zeros for dry terrain)
+        int arraySize = grid.Width * grid.Depth;
+        string waterArray = new string('0', arraySize);
+        string moistureArray = new string('0', arraySize);
+
         // Build terrain block entities
         var terrainEntities = BuildTerrainBlockEntities(grid);
 
@@ -72,6 +77,15 @@ public class TimberbornMapExporter
                     {
                         Array = heightsArray
                     }
+                },
+                WaterMap = new WaterMap
+                {
+                    WaterDepths = new WaterArray { Array = waterArray },
+                    Outflows = new WaterArray { Array = waterArray }
+                },
+                SoilMoistureSimulator = new SoilMoistureSimulator
+                {
+                    MoistureLevels = new MoistureArray { Array = moistureArray }
                 },
                 CameraComponent = new CameraComponent
                 {

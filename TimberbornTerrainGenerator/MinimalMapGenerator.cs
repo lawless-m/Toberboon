@@ -61,6 +61,15 @@ public class MinimalMapGenerator
                         Array = new string('0', 16) // 4x4 = 16 positions, all height 0
                     }
                 },
+                WaterMap = new WaterMap
+                {
+                    WaterDepths = new WaterArray { Array = new string('0', 16) },
+                    Outflows = new WaterArray { Array = new string('0', 16) }
+                },
+                SoilMoistureSimulator = new SoilMoistureSimulator
+                {
+                    MoistureLevels = new MoistureArray { Array = new string('0', 16) }
+                },
                 CameraComponent = new CameraComponent
                 {
                     CameraState = new CameraState

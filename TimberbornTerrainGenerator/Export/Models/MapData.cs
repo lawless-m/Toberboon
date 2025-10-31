@@ -25,6 +25,12 @@ public record Singletons
     [JsonProperty("TerrainMap")]
     public TerrainMap TerrainMap { get; init; } = new();
 
+    [JsonProperty("WaterMap")]
+    public WaterMap WaterMap { get; init; } = new();
+
+    [JsonProperty("SoilMoistureSimulator")]
+    public SoilMoistureSimulator SoilMoistureSimulator { get; init; } = new();
+
     [JsonProperty("CameraComponent")]
     public CameraComponent CameraComponent { get; init; } = new();
 }
@@ -87,4 +93,31 @@ public record Target
 
     [JsonProperty("Z")]
     public float Z { get; init; }
+}
+
+public record WaterMap
+{
+    [JsonProperty("WaterDepths")]
+    public WaterArray WaterDepths { get; init; } = new();
+
+    [JsonProperty("Outflows")]
+    public WaterArray Outflows { get; init; } = new();
+}
+
+public record WaterArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
+}
+
+public record SoilMoistureSimulator
+{
+    [JsonProperty("MoistureLevels")]
+    public MoistureArray MoistureLevels { get; init; } = new();
+}
+
+public record MoistureArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
 }
