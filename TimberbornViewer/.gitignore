@@ -29,4 +29,7 @@ dist/
 
 # Example files
 public/
+
+# Ignore .timber files except in examples folder
 *.timber
+!examples/*.timber

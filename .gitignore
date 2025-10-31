@@ -1,0 +1,12 @@
+# Ignore .timber output files except in examples/
+*.timber
+!examples/*.timber
+
+# Generator output directory
+TimberbornTerrainGenerator/output/
+TimberbornTerrainGenerator/bin/
+TimberbornTerrainGenerator/obj/
+
+# Viewer build and dependencies
+TimberbornViewer/node_modules/
+TimberbornViewer/dist/
