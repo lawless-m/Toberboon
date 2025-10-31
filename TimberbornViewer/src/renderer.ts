@@ -10,11 +10,13 @@ export class TerrainRenderer {
   private container: HTMLElement;
 
   constructor(container: HTMLElement) {
+    console.log('🎨 Initializing TerrainRenderer...');
     this.container = container;
 
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
+    console.log('✓ Scene created');
 
     // Create camera
     this.camera = new THREE.PerspectiveCamera(
@@ -24,6 +26,7 @@ export class TerrainRenderer {
       1000
     );
     this.camera.position.set(50, 50, 50);
+    console.log('✓ Camera created at position:', this.camera.position);
 
     // Create renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,6 +35,7 @@ export class TerrainRenderer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
+    console.log('✓ WebGL renderer created');
 
     // Add controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -39,19 +43,24 @@ export class TerrainRenderer {
     this.controls.dampingFactor = 0.05;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 500;
+    console.log('✓ Orbit controls initialized');
 
     // Add lights
     this.setupLights();
+    console.log('✓ Lights added');
 
     // Add grid helper
     const gridHelper = new THREE.GridHelper(200, 50, 0x444444, 0x222222);
     this.scene.add(gridHelper);
+    console.log('✓ Grid helper added');
 
     // Handle window resize
     window.addEventListener('resize', () => this.onWindowResize());
 
     // Start animation loop
     this.animate();
+    console.log('✓ Animation loop started');
+    console.log('🎨 TerrainRenderer initialization complete!');
   }
 
   private setupLights() {
@@ -79,27 +88,42 @@ export class TerrainRenderer {
   }
 
   public loadTerrain(data: ParsedMapData) {
+    console.log('🌍 Loading terrain...', data);
+    console.log(`  Map size: ${data.mapSize.x}×${data.mapSize.y}`);
+    console.log(`  Terrain blocks: ${data.terrainBlocks.length}`);
+    console.log(`  Water sources: ${data.waterSources.length}`);
+    console.log(`  Trees: ${data.trees.length}`);
+    console.log(`  Bushes: ${data.bushes.length}`);
+
     // Clear existing terrain
+    console.log('  Clearing existing terrain...');
     this.clearTerrain();
 
     // Render terrain blocks
+    console.log('  Rendering terrain blocks...');
     this.renderTerrainBlocks(data.terrainBlocks);
 
     // Render water sources
+    console.log('  Rendering water sources...');
     this.renderWaterSources(data.waterSources);
 
     // Render trees
+    console.log('  Rendering trees...');
     this.renderTrees(data.trees);
 
     // Render bushes
+    console.log('  Rendering bushes...');
     this.renderBushes(data.bushes);
 
     // Center camera on terrain
     const centerX = data.mapSize.x / 2;
     const centerZ = data.mapSize.y / 2;
+    console.log(`  Centering camera at: (${centerX}, 10, ${centerZ})`);
     this.controls.target.set(centerX, 10, centerZ);
     this.camera.position.set(centerX + 50, 50, centerZ + 50);
     this.controls.update();
+
+    console.log('✓ Terrain loaded successfully!');
   }
 
   private clearTerrain() {
