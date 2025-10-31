@@ -1,6 +1,5 @@
 using System.IO.Compression;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using TimberbornTerrainGenerator.Export.Models;
 
 namespace TimberbornTerrainGenerator;
@@ -73,14 +72,14 @@ public class MinimalMapGenerator
             Entities = entities
         };
 
-        // Serialize to JSON
-        var options = new JsonSerializerOptions
+        // Serialize to JSON using Newtonsoft.Json for compatibility with Timberborn
+        var settings = new JsonSerializerSettings
         {
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
+            Formatting = Formatting.None,
+            NullValueHandling = NullValueHandling.Include
         };
 
-        string json = JsonSerializer.Serialize(mapData, options);
+        string json = JsonConvert.SerializeObject(mapData, settings);
 
         // Create ZIP archive
         string timberPath = Path.Combine(outputPath, "UltraMinimal.timber");

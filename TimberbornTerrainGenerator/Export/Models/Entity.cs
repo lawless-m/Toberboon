@@ -1,15 +1,15 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TimberbornTerrainGenerator.Export.Models;
 
 public record Entity
 {
-    [JsonPropertyName("Id")]
+    [JsonProperty("Id")]
     public string Id { get; init; } = "";
 
-    [JsonPropertyName("Template")]
+    [JsonProperty("Template")]
     public string Template { get; init; } = "";
 
-    [JsonPropertyName("Components")]
+    [JsonProperty("Components")]
     public List<object> Components { get; init; } = [];
 }

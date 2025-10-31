@@ -1,13 +1,13 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TimberbornTerrainGenerator.Export.Models;
 
 public record Coordinates(
-    [property: JsonPropertyName("X")] int X,
-    [property: JsonPropertyName("Y")] int Y,
-    [property: JsonPropertyName("Z")] int Z
+    [property: JsonProperty("X")] int X,
+    [property: JsonProperty("Y")] int Y,
+    [property: JsonProperty("Z")] int Z
 );
 
 public record Orientation(
-    [property: JsonPropertyName("Value")] int Value
+    [property: JsonProperty("Value")] int Value
 );

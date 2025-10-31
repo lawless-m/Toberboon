@@ -1,7 +1,6 @@
 using System.IO.Compression;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using TimberbornTerrainGenerator.Config;
 using TimberbornTerrainGenerator.Export.Models;
 using TimberbornTerrainGenerator.Terrain;
@@ -16,14 +15,14 @@ public class TimberbornMapExporter
         // Build MapData
         var mapData = BuildMapData(grid, entities, config);
 
-        // Serialize to JSON
-        var options = new JsonSerializerOptions
+        // Serialize to JSON using Newtonsoft.Json for compatibility with Timberborn
+        var settings = new JsonSerializerSettings
         {
-            WriteIndented = false, // Compact JSON
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
+            Formatting = Formatting.None, // Compact JSON
+            NullValueHandling = NullValueHandling.Include
         };
 
-        string json = JsonSerializer.Serialize(mapData, options);
+        string json = JsonConvert.SerializeObject(mapData, settings);
 
         // Create ZIP archive (.timber file)
         string timberPath = Path.Combine(outputPath, $"{config.OutputName}.timber");
