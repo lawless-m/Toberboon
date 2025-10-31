@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TimberbornTerrainGenerator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- No external dependencies - using built-in libraries only -->
+    <!-- System.Text.Json and System.IO.Compression are included in .NET 8 -->
+  </ItemGroup>
+</Project>
