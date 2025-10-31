@@ -41,7 +41,7 @@ public class MinimalMapGenerator
         var mapData = new MapData
         {
             GameVersion = "0.7.10.0",
-            Timestamp = DateTime.UtcNow.ToString("o"),
+            Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
             Singletons = new Singletons
             {
                 MapSize = new MapSize
@@ -96,7 +96,15 @@ public class MinimalMapGenerator
             NullValueHandling = NullValueHandling.Include
         };
 
-        string json = JsonConvert.SerializeObject(mapData, settings);
+        string worldJson = JsonConvert.SerializeObject(mapData, settings);
+
+        // Build metadata
+        var metadata = new MapMetadata
+        {
+            Width = 4,
+            Height = 4
+        };
+        string metadataJson = JsonConvert.SerializeObject(metadata, settings);
 
         // Create ZIP archive
         string timberPath = Path.Combine(outputPath, "UltraMinimal.timber");
@@ -104,11 +112,50 @@ public class MinimalMapGenerator
             File.Delete(timberPath);
 
         using var archive = ZipFile.Open(timberPath, ZipArchiveMode.Create);
-        var entry = archive.CreateEntry("world.json");
 
-        using (var writer = new StreamWriter(entry.Open()))
+        // Add world.json
+        var worldEntry = archive.CreateEntry("world.json");
+        using (var writer = new StreamWriter(worldEntry.Open()))
         {
-            writer.Write(json);
+            writer.Write(worldJson);
+        }
+
+        // Add map_metadata.json
+        var metadataEntry = archive.CreateEntry("map_metadata.json");
+        using (var writer = new StreamWriter(metadataEntry.Open()))
+        {
+            writer.Write(metadataJson);
+        }
+
+        // Add version.txt
+        var versionEntry = archive.CreateEntry("version.txt");
+        using (var writer = new StreamWriter(versionEntry.Open()))
+        {
+            writer.Write("0.7.10.0");
+        }
+
+        // Add placeholder map_thumbnail.jpg (1x1 pixel JPEG)
+        var thumbnailEntry = archive.CreateEntry("map_thumbnail.jpg");
+        using (var stream = thumbnailEntry.Open())
+        {
+            // Minimal valid JPEG (1x1 black pixel)
+            byte[] minimalJpeg = new byte[] {
+                0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+                0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43,
+                0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x00, 0x0B, 0x08, 0x00, 0x01,
+                0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x03, 0xFF, 0xC4, 0x00, 0x14, 0x10, 0x01, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3F, 0x00,
+                0x37, 0xFF, 0xD9
+            };
+            stream.Write(minimalJpeg, 0, minimalJpeg.Length);
         }
 
         Console.WriteLine($"✓ Created minimal map: {timberPath}");

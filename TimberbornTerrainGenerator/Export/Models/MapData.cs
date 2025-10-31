@@ -8,7 +8,7 @@ public record MapData
     public string GameVersion { get; init; } = "0.7.10.0";
 
     [JsonProperty("Timestamp")]
-    public string Timestamp { get; init; } = DateTime.UtcNow.ToString("o");
+    public string Timestamp { get; init; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
     [JsonProperty("Singletons")]
     public Singletons Singletons { get; init; } = new();
@@ -186,4 +186,28 @@ public record Position
 
     [JsonProperty("Z")]
     public float Z { get; init; }
+}
+
+public record MapMetadata
+{
+    [JsonProperty("Width")]
+    public int Width { get; init; }
+
+    [JsonProperty("Height")]
+    public int Height { get; init; }
+
+    [JsonProperty("MapNameLocKey")]
+    public string MapNameLocKey { get; init; } = "";
+
+    [JsonProperty("MapDescriptionLocKey")]
+    public string MapDescriptionLocKey { get; init; } = "";
+
+    [JsonProperty("MapDescription")]
+    public string MapDescription { get; init; } = "";
+
+    [JsonProperty("IsRecommended")]
+    public bool IsRecommended { get; init; } = false;
+
+    [JsonProperty("IsDev")]
+    public bool IsDev { get; init; } = false;
 }
