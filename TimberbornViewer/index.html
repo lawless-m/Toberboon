@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timberborn Terrain Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            pointer-events: none;
+        }
+
+        #controls {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 400px;
+            pointer-events: all;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #45a049;
+        }
+
+        #info {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+
+        #info div {
+            margin: 5px 0;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-label {
+            color: #aaa;
+        }
+
+        .stat-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px 50px;
+            border-radius: 12px;
+            display: none;
+        }
+
+        #loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #instructions {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        #instructions h3 {
+            margin-bottom: 10px;
+            color: #4CAF50;
+            font-size: 14px;
+        }
+
+        #instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        #instructions li {
+            margin: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        #instructions li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="canvas-container"></div>
+
+        <div id="ui-overlay">
+            <div id="controls">
+                <h1>🌲 Timberborn Viewer</h1>
+
+                <div class="control-group">
+                    <label for="file-input">Load .timber file:</label>
+                    <input type="file" id="file-input" accept=".timber" />
+                </div>
+
+                <div id="info" style="display: none;">
+                    <div class="stat">
+                        <span class="stat-label">Map Size:</span>
+                        <span class="stat-value" id="map-size">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Terrain Blocks:</span>
+                        <span class="stat-value" id="terrain-blocks">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Water Sources:</span>
+                        <span class="stat-value" id="water-sources">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Trees:</span>
+                        <span class="stat-value" id="trees">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Bushes:</span>
+                        <span class="stat-value" id="bushes">-</span>
+                    </div>
+                </div>
+
+                <div id="instructions">
+                    <h3>Controls</h3>
+                    <ul>
+                        <li>Left Click + Drag: Rotate camera</li>
+                        <li>Right Click + Drag: Pan camera</li>
+                        <li>Mouse Wheel: Zoom in/out</li>
+                        <li>Arrow Keys: Move camera</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Loading terrain...</div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
