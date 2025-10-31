@@ -1,0 +1,63 @@
+name: Build TimberbornViewer
+
+on:
+  push:
+    branches: [ main, master, 'claude/**' ]
+    paths:
+      - 'TimberbornViewer/**'
+      - '.github/workflows/build-viewer.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'TimberbornViewer/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: TimberbornViewer/package-lock.json
+
+    - name: Install dependencies
+      working-directory: TimberbornViewer
+      run: npm ci
+
+    - name: Build TypeScript viewer
+      working-directory: TimberbornViewer
+      run: npm run build
+
+    - name: Check build output
+      working-directory: TimberbornViewer
+      run: |
+        echo "✓ Build completed successfully"
+        echo ""
+        echo "Built files:"
+        ls -lh dist/
+        echo ""
+        du -sh dist/
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: viewer-dist
+        path: TimberbornViewer/dist/
+        retention-days: 30
+
+    # Optional: Commit built files back to repository
+    # Uncomment if you want dist/ to be committed automatically
+    # - name: Commit dist/ files
+    #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    #   run: |
+    #     git config --local user.email "github-actions[bot]@users.noreply.github.com"
+    #     git config --local user.name "github-actions[bot]"
+    #     git add TimberbornViewer/dist/ -f
+    #     git diff --staged --quiet || git commit -m "Build: Update viewer dist/ files [skip ci]"
+    #     git push
