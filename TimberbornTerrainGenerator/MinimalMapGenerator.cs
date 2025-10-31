@@ -80,10 +80,23 @@ public class MinimalMapGenerator
                 },
                 MapThumbnailCameraMover = new MapThumbnailCameraMover
                 {
-                    Position = new Position { X = 2, Y = 0, Z = 2 },
-                    ZoomLevel = 0.5f,
-                    HorizontalAngle = 45.0f,
-                    VerticalAngle = 45.0f
+                    CurrentConfiguration = new CameraConfiguration
+                    {
+                        Position = new Position
+                        {
+                            X = 2.0f,
+                            Y = 2.5711503f,
+                            Z = -1.064178f
+                        },
+                        Rotation = new Rotation
+                        {
+                            X = 0.342020124f,
+                            Y = 0.0f,
+                            Z = 0.0f,
+                            W = 0.9396926f
+                        },
+                        ShadowDistance = 150.0f
+                    }
                 }
             },
             Entities = [] // No TerrainBlock entities - terrain is in Voxels array

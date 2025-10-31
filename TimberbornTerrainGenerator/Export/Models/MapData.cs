@@ -163,17 +163,35 @@ public record HazardousWeatherHistory
 
 public record MapThumbnailCameraMover
 {
+    [JsonProperty("CurrentConfiguration")]
+    public CameraConfiguration CurrentConfiguration { get; init; } = new();
+}
+
+public record CameraConfiguration
+{
     [JsonProperty("Position")]
     public Position Position { get; init; } = new();
 
-    [JsonProperty("ZoomLevel")]
-    public float ZoomLevel { get; init; } = 0.5f;
+    [JsonProperty("Rotation")]
+    public Rotation Rotation { get; init; } = new();
 
-    [JsonProperty("HorizontalAngle")]
-    public float HorizontalAngle { get; init; } = 45.0f;
+    [JsonProperty("ShadowDistance")]
+    public float ShadowDistance { get; init; } = 150.0f;
+}
 
-    [JsonProperty("VerticalAngle")]
-    public float VerticalAngle { get; init; } = 45.0f;
+public record Rotation
+{
+    [JsonProperty("X")]
+    public float X { get; init; } = 0.342020124f;
+
+    [JsonProperty("Y")]
+    public float Y { get; init; } = 0.0f;
+
+    [JsonProperty("Z")]
+    public float Z { get; init; } = 0.0f;
+
+    [JsonProperty("W")]
+    public float W { get; init; } = 0.9396926f;
 }
 
 public record Position

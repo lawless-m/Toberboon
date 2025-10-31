@@ -147,15 +147,23 @@ public class TimberbornMapExporter
                 },
                 MapThumbnailCameraMover = new MapThumbnailCameraMover
                 {
-                    Position = new Position
+                    CurrentConfiguration = new CameraConfiguration
                     {
-                        X = config.MapSize / 2.0f,
-                        Y = 0,
-                        Z = config.MapSize / 2.0f
-                    },
-                    ZoomLevel = 0.5f,
-                    HorizontalAngle = 45.0f,
-                    VerticalAngle = 45.0f
+                        Position = new Position
+                        {
+                            X = config.MapSize / 2.0f,
+                            Y = config.MapSize * 0.64f,
+                            Z = config.MapSize / -2.0f
+                        },
+                        Rotation = new Rotation
+                        {
+                            X = 0.342020124f,
+                            Y = 0.0f,
+                            Z = 0.0f,
+                            W = 0.9396926f
+                        },
+                        ShadowDistance = 150.0f
+                    }
                 }
             },
             Entities = entities // No TerrainBlock entities - terrain is in Voxels array
