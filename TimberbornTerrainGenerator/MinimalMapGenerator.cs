@@ -17,31 +17,25 @@ public class MinimalMapGenerator
     {
         Console.WriteLine("Generating minimal 4x4x3 test map...");
 
-        var entities = new List<Entity>();
-        int entityId = 1;
-
-        // Create a 4x4 grid with 3 layers of terrain
-        for (int x = 0; x < 4; x++)
-        for (int z = 0; z < 4; z++)
-        for (int y = 0; y < 3; y++)
+        // Build voxels array: 4x4x3 = 48 voxels
+        // First 3 layers (y=0,1,2) all solid, rest air
+        var voxels = new List<string>();
+        for (int y = 0; y < 3; y++)  // 3 layers high
+        for (int z = 0; z < 4; z++)  // 4 deep
+        for (int x = 0; x < 4; x++)  // 4 wide
         {
-            entities.Add(new Entity
-            {
-                Id = $"terrain-{entityId++}",
-                Template = "TerrainBlock",
-                Components =
-                [
-                    new BlockObjectComponent
-                    {
-                        BlockObject = new BlockObject
-                        {
-                            Coordinates = new Coordinates(x, y, z),
-                            Orientation = new Orientation(0)
-                        }
-                    }
-                ]
-            });
+            voxels.Add("1"); // All solid for first 3 layers
         }
+
+        string voxelsArray = string.Join(" ", voxels);
+
+        // Water and moisture arrays for 4x4 surface
+        int surfaceSize = 16; // 4x4
+        string waterArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
+        string moistureArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
+        string contaminationArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
+        string evaporationArray = string.Join(" ", Enumerable.Repeat("1", surfaceSize));
+        string outflowsArray = string.Join(" ", Enumerable.Repeat("0|0:0|0:0|0:0|0", surfaceSize));
 
         // Build minimal map data
         var mapData = new MapData
@@ -56,29 +50,43 @@ public class MinimalMapGenerator
                 },
                 TerrainMap = new TerrainMap
                 {
-                    Heights = new HeightsArray
+                    Voxels = new VoxelsArray
                     {
-                        Array = new string('0', 16) // 4x4 = 16 positions, all height 0
+                        Array = voxelsArray
                     }
                 },
-                WaterMap = new WaterMap
+                WaterMapNew = new WaterMapNew
                 {
-                    WaterDepths = new WaterArray { Array = new string('0', 16) },
-                    Outflows = new WaterArray { Array = new string('0', 16) }
+                    Levels = 1,
+                    WaterColumns = new WaterArray { Array = waterArray },
+                    ColumnOutflows = new WaterArray { Array = outflowsArray }
+                },
+                WaterEvaporationMap = new WaterEvaporationMap
+                {
+                    Levels = 1,
+                    EvaporationModifiers = new WaterArray { Array = evaporationArray }
                 },
                 SoilMoistureSimulator = new SoilMoistureSimulator
                 {
-                    MoistureLevels = new MoistureArray { Array = new string('0', 16) }
+                    MoistureLevels = new MoistureArray { Array = moistureArray }
                 },
-                CameraComponent = new CameraComponent
+                SoilContaminationSimulator = new SoilContaminationSimulator
                 {
-                    CameraState = new CameraState
-                    {
-                        Target = new Target { X = 2, Y = 0, Z = 2 }
-                    }
+                    ContaminationLevels = new ContaminationArray { Array = contaminationArray }
+                },
+                HazardousWeatherHistory = new HazardousWeatherHistory
+                {
+                    HistoryData = []
+                },
+                MapThumbnailCameraMover = new MapThumbnailCameraMover
+                {
+                    Position = new Position { X = 2, Y = 0, Z = 2 },
+                    ZoomLevel = 0.5f,
+                    HorizontalAngle = 45.0f,
+                    VerticalAngle = 45.0f
                 }
             },
-            Entities = entities
+            Entities = [] // No TerrainBlock entities - terrain is in Voxels array
         };
 
         // Serialize to JSON using Newtonsoft.Json for compatibility with Timberborn
@@ -105,7 +113,8 @@ public class MinimalMapGenerator
 
         Console.WriteLine($"✓ Created minimal map: {timberPath}");
         Console.WriteLine($"  Size: 4x4x3");
-        Console.WriteLine($"  Entities: {entities.Count} (all TerrainBlock)");
+        Console.WriteLine($"  Voxels: 48 (all solid)");
+        Console.WriteLine($"  Entities: 0 (terrain defined in Voxels array)");
         Console.WriteLine($"  File size: {new FileInfo(timberPath).Length / 1024.0:F1} KB");
     }
 }

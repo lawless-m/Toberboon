@@ -25,14 +25,23 @@ public record Singletons
     [JsonProperty("TerrainMap")]
     public TerrainMap TerrainMap { get; init; } = new();
 
-    [JsonProperty("WaterMap")]
-    public WaterMap WaterMap { get; init; } = new();
+    [JsonProperty("WaterMapNew")]
+    public WaterMapNew WaterMapNew { get; init; } = new();
+
+    [JsonProperty("WaterEvaporationMap")]
+    public WaterEvaporationMap WaterEvaporationMap { get; init; } = new();
 
     [JsonProperty("SoilMoistureSimulator")]
     public SoilMoistureSimulator SoilMoistureSimulator { get; init; } = new();
 
-    [JsonProperty("CameraComponent")]
-    public CameraComponent CameraComponent { get; init; } = new();
+    [JsonProperty("SoilContaminationSimulator")]
+    public SoilContaminationSimulator SoilContaminationSimulator { get; init; } = new();
+
+    [JsonProperty("HazardousWeatherHistory")]
+    public HazardousWeatherHistory HazardousWeatherHistory { get; init; } = new();
+
+    [JsonProperty("MapThumbnailCameraMover")]
+    public MapThumbnailCameraMover MapThumbnailCameraMover { get; init; } = new();
 }
 
 public record MapSize
@@ -52,11 +61,11 @@ public record Size
 
 public record TerrainMap
 {
-    [JsonProperty("Heights")]
-    public HeightsArray Heights { get; init; } = new();
+    [JsonProperty("Voxels")]
+    public VoxelsArray Voxels { get; init; } = new();
 }
 
-public record HeightsArray
+public record VoxelsArray
 {
     [JsonProperty("Array")]
     public string Array { get; init; } = "";
@@ -95,13 +104,25 @@ public record Target
     public float Z { get; init; }
 }
 
-public record WaterMap
+public record WaterMapNew
 {
-    [JsonProperty("WaterDepths")]
-    public WaterArray WaterDepths { get; init; } = new();
+    [JsonProperty("Levels")]
+    public int Levels { get; init; } = 1;
 
-    [JsonProperty("Outflows")]
-    public WaterArray Outflows { get; init; } = new();
+    [JsonProperty("WaterColumns")]
+    public WaterArray WaterColumns { get; init; } = new();
+
+    [JsonProperty("ColumnOutflows")]
+    public WaterArray ColumnOutflows { get; init; } = new();
+}
+
+public record WaterEvaporationMap
+{
+    [JsonProperty("Levels")]
+    public int Levels { get; init; } = 1;
+
+    [JsonProperty("EvaporationModifiers")]
+    public WaterArray EvaporationModifiers { get; init; } = new();
 }
 
 public record WaterArray
@@ -120,4 +141,49 @@ public record MoistureArray
 {
     [JsonProperty("Array")]
     public string Array { get; init; } = "";
+}
+
+public record SoilContaminationSimulator
+{
+    [JsonProperty("ContaminationLevels")]
+    public ContaminationArray ContaminationLevels { get; init; } = new();
+}
+
+public record ContaminationArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
+}
+
+public record HazardousWeatherHistory
+{
+    [JsonProperty("HistoryData")]
+    public List<object> HistoryData { get; init; } = [];
+}
+
+public record MapThumbnailCameraMover
+{
+    [JsonProperty("Position")]
+    public Position Position { get; init; } = new();
+
+    [JsonProperty("ZoomLevel")]
+    public float ZoomLevel { get; init; } = 0.5f;
+
+    [JsonProperty("HorizontalAngle")]
+    public float HorizontalAngle { get; init; } = 45.0f;
+
+    [JsonProperty("VerticalAngle")]
+    public float VerticalAngle { get; init; } = 45.0f;
+}
+
+public record Position
+{
+    [JsonProperty("X")]
+    public float X { get; init; }
+
+    [JsonProperty("Y")]
+    public float Y { get; init; }
+
+    [JsonProperty("Z")]
+    public float Z { get; init; }
 }
