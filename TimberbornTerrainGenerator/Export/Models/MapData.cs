@@ -5,7 +5,7 @@ namespace TimberbornTerrainGenerator.Export.Models;
 public record MapData
 {
     [JsonPropertyName("GameVersion")]
-    public string GameVersion { get; init; } = "0.7.0.0";
+    public string GameVersion { get; init; } = "0.7.10.0";
 
     [JsonPropertyName("Timestamp")]
     public string Timestamp { get; init; } = DateTime.UtcNow.ToString("o");

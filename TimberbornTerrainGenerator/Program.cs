@@ -11,6 +11,15 @@ class Program
     {
         Console.WriteLine("=== Timberborn 3D Voxel Terrain Generator ===\n");
 
+        // Check for minimal mode
+        if (args.Contains("--minimal"))
+        {
+            string minimalOutputPath = GetOutputPath();
+            Directory.CreateDirectory(minimalOutputPath);
+            MinimalMapGenerator.Generate(minimalOutputPath);
+            return;
+        }
+
         // Get configuration (from CLI args or defaults)
         var config = GetConfiguration(args);
 
