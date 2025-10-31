@@ -9,7 +9,6 @@ lerna-debug.log*
 
 # Dependencies
 node_modules
-dist
 dist-ssr
 *.local
 
@@ -25,7 +24,8 @@ dist-ssr
 *.sw?
 
 # Build output
-dist/
+# NOTE: dist/ is now committed for easy deployment
+# Run 'npm run build' to rebuild when source changes
 
 # Example files
 public/
