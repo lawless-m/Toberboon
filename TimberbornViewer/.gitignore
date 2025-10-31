@@ -26,3 +26,7 @@ dist-ssr
 
 # Build output
 dist/
+
+# Example files
+public/
+*.timber
