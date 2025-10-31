@@ -1,0 +1,54 @@
+name: Build TimberbornTerrainGenerator
+
+on:
+  push:
+    branches: [ main, master, 'claude/**' ]
+    paths:
+      - 'TimberbornTerrainGenerator/**'
+      - '.github/workflows/build-generator.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'TimberbornTerrainGenerator/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      working-directory: TimberbornTerrainGenerator
+      run: dotnet restore
+
+    - name: Build
+      working-directory: TimberbornTerrainGenerator
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Check build output
+      working-directory: TimberbornTerrainGenerator
+      run: |
+        echo "✓ Build completed successfully"
+        echo ""
+        echo "Built files:"
+        ls -lh bin/Release/net8.0/
+
+    # Optional: Run tests if you add them
+    # - name: Test
+    #   working-directory: TimberbornTerrainGenerator
+    #   run: dotnet test --no-build --verbosity normal
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: generator-build
+        path: |
+          TimberbornTerrainGenerator/bin/Release/net8.0/
+        retention-days: 30
