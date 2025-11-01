@@ -1,42 +1,42 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TimberbornTerrainGenerator.Export.Models;
 
 public record BlockObjectComponent
 {
-    [JsonPropertyName("BlockObject")]
+    [JsonProperty("BlockObject")]
     public BlockObject BlockObject { get; init; } = new();
 }
 
 public record BlockObject
 {
-    [JsonPropertyName("Coordinates")]
+    [JsonProperty("Coordinates")]
     public Coordinates Coordinates { get; init; } = new(0, 0, 0);
 
-    [JsonPropertyName("Orientation")]
+    [JsonProperty("Orientation")]
     public Orientation Orientation { get; init; } = new(0);
 }
 
 public record WaterSourceComponent
 {
-    [JsonPropertyName("WaterSource")]
+    [JsonProperty("WaterSource")]
     public WaterSourceData WaterSource { get; init; } = new();
 }
 
 public record WaterSourceData
 {
-    [JsonPropertyName("SpecifiedStrength")]
+    [JsonProperty("SpecifiedStrength")]
     public float SpecifiedStrength { get; init; }
 }
 
 public record GrowableComponent
 {
-    [JsonPropertyName("Growable")]
+    [JsonProperty("Growable")]
     public GrowableData Growable { get; init; } = new();
 }
 
 public record GrowableData
 {
-    [JsonPropertyName("GrowthProgress")]
+    [JsonProperty("GrowthProgress")]
     public float GrowthProgress { get; init; }
 }

@@ -1,90 +1,231 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace TimberbornTerrainGenerator.Export.Models;
 
 public record MapData
 {
-    [JsonPropertyName("GameVersion")]
-    public string GameVersion { get; init; } = "0.7.0.0";
+    [JsonProperty("GameVersion")]
+    public string GameVersion { get; init; } = "0.7.10.0";
 
-    [JsonPropertyName("Timestamp")]
-    public string Timestamp { get; init; } = DateTime.UtcNow.ToString("o");
+    [JsonProperty("Timestamp")]
+    public string Timestamp { get; init; } = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-    [JsonPropertyName("Singletons")]
+    [JsonProperty("Singletons")]
     public Singletons Singletons { get; init; } = new();
 
-    [JsonPropertyName("Entities")]
+    [JsonProperty("Entities")]
     public List<Entity> Entities { get; init; } = [];
 }
 
 public record Singletons
 {
-    [JsonPropertyName("MapSize")]
+    [JsonProperty("MapSize")]
     public MapSize MapSize { get; init; } = new();
 
-    [JsonPropertyName("TerrainMap")]
+    [JsonProperty("TerrainMap")]
     public TerrainMap TerrainMap { get; init; } = new();
 
-    [JsonPropertyName("CameraComponent")]
-    public CameraComponent CameraComponent { get; init; } = new();
+    [JsonProperty("WaterMapNew")]
+    public WaterMapNew WaterMapNew { get; init; } = new();
+
+    [JsonProperty("WaterEvaporationMap")]
+    public WaterEvaporationMap WaterEvaporationMap { get; init; } = new();
+
+    [JsonProperty("SoilMoistureSimulator")]
+    public SoilMoistureSimulator SoilMoistureSimulator { get; init; } = new();
+
+    [JsonProperty("SoilContaminationSimulator")]
+    public SoilContaminationSimulator SoilContaminationSimulator { get; init; } = new();
+
+    [JsonProperty("HazardousWeatherHistory")]
+    public HazardousWeatherHistory HazardousWeatherHistory { get; init; } = new();
+
+    [JsonProperty("MapThumbnailCameraMover")]
+    public MapThumbnailCameraMover MapThumbnailCameraMover { get; init; } = new();
 }
 
 public record MapSize
 {
-    [JsonPropertyName("Size")]
+    [JsonProperty("Size")]
     public Size Size { get; init; } = new();
 }
 
 public record Size
 {
-    [JsonPropertyName("X")]
+    [JsonProperty("X")]
     public int X { get; init; }
 
-    [JsonPropertyName("Y")]
+    [JsonProperty("Y")]
     public int Y { get; init; }
 }
 
 public record TerrainMap
 {
-    [JsonPropertyName("Heights")]
-    public HeightsArray Heights { get; init; } = new();
+    [JsonProperty("Voxels")]
+    public VoxelsArray Voxels { get; init; } = new();
 }
 
-public record HeightsArray
+public record VoxelsArray
 {
-    [JsonPropertyName("Array")]
+    [JsonProperty("Array")]
     public string Array { get; init; } = "";
 }
 
 public record CameraComponent
 {
-    [JsonPropertyName("CameraState")]
+    [JsonProperty("CameraState")]
     public CameraState CameraState { get; init; } = new();
 }
 
 public record CameraState
 {
-    [JsonPropertyName("Target")]
+    [JsonProperty("Target")]
     public Target Target { get; init; } = new();
 
-    [JsonPropertyName("ZoomLevel")]
+    [JsonProperty("ZoomLevel")]
     public float ZoomLevel { get; init; } = 0.5f;
 
-    [JsonPropertyName("HorizontalAngle")]
+    [JsonProperty("HorizontalAngle")]
     public float HorizontalAngle { get; init; } = 45.0f;
 
-    [JsonPropertyName("VerticalAngle")]
+    [JsonProperty("VerticalAngle")]
     public float VerticalAngle { get; init; } = 45.0f;
 }
 
 public record Target
 {
-    [JsonPropertyName("X")]
+    [JsonProperty("X")]
     public float X { get; init; }
 
-    [JsonPropertyName("Y")]
+    [JsonProperty("Y")]
     public float Y { get; init; }
 
-    [JsonPropertyName("Z")]
+    [JsonProperty("Z")]
     public float Z { get; init; }
+}
+
+public record WaterMapNew
+{
+    [JsonProperty("Levels")]
+    public int Levels { get; init; } = 1;
+
+    [JsonProperty("WaterColumns")]
+    public WaterArray WaterColumns { get; init; } = new();
+
+    [JsonProperty("ColumnOutflows")]
+    public WaterArray ColumnOutflows { get; init; } = new();
+}
+
+public record WaterEvaporationMap
+{
+    [JsonProperty("Levels")]
+    public int Levels { get; init; } = 1;
+
+    [JsonProperty("EvaporationModifiers")]
+    public WaterArray EvaporationModifiers { get; init; } = new();
+}
+
+public record WaterArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
+}
+
+public record SoilMoistureSimulator
+{
+    [JsonProperty("MoistureLevels")]
+    public MoistureArray MoistureLevels { get; init; } = new();
+}
+
+public record MoistureArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
+}
+
+public record SoilContaminationSimulator
+{
+    [JsonProperty("ContaminationLevels")]
+    public ContaminationArray ContaminationLevels { get; init; } = new();
+}
+
+public record ContaminationArray
+{
+    [JsonProperty("Array")]
+    public string Array { get; init; } = "";
+}
+
+public record HazardousWeatherHistory
+{
+    [JsonProperty("HistoryData")]
+    public List<object> HistoryData { get; init; } = [];
+}
+
+public record MapThumbnailCameraMover
+{
+    [JsonProperty("CurrentConfiguration")]
+    public CameraConfiguration CurrentConfiguration { get; init; } = new();
+}
+
+public record CameraConfiguration
+{
+    [JsonProperty("Position")]
+    public Position Position { get; init; } = new();
+
+    [JsonProperty("Rotation")]
+    public Rotation Rotation { get; init; } = new();
+
+    [JsonProperty("ShadowDistance")]
+    public float ShadowDistance { get; init; } = 150.0f;
+}
+
+public record Rotation
+{
+    [JsonProperty("X")]
+    public float X { get; init; } = 0.342020124f;
+
+    [JsonProperty("Y")]
+    public float Y { get; init; } = 0.0f;
+
+    [JsonProperty("Z")]
+    public float Z { get; init; } = 0.0f;
+
+    [JsonProperty("W")]
+    public float W { get; init; } = 0.9396926f;
+}
+
+public record Position
+{
+    [JsonProperty("X")]
+    public float X { get; init; }
+
+    [JsonProperty("Y")]
+    public float Y { get; init; }
+
+    [JsonProperty("Z")]
+    public float Z { get; init; }
+}
+
+public record MapMetadata
+{
+    [JsonProperty("Width")]
+    public int Width { get; init; }
+
+    [JsonProperty("Height")]
+    public int Height { get; init; }
+
+    [JsonProperty("MapNameLocKey")]
+    public string MapNameLocKey { get; init; } = "";
+
+    [JsonProperty("MapDescriptionLocKey")]
+    public string MapDescriptionLocKey { get; init; } = "";
+
+    [JsonProperty("MapDescription")]
+    public string MapDescription { get; init; } = "";
+
+    [JsonProperty("IsRecommended")]
+    public bool IsRecommended { get; init; } = false;
+
+    [JsonProperty("IsDev")]
+    public bool IsDev { get; init; } = false;
 }

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- No external dependencies - using built-in libraries only -->
-    <!-- System.Text.Json and System.IO.Compression are included in .NET 8 -->
+    <!-- Use Newtonsoft.Json for 100% compatibility with Timberborn's deserialization -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 </Project>

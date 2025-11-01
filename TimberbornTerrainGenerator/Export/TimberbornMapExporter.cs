@@ -1,7 +1,6 @@
 using System.IO.Compression;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using TimberbornTerrainGenerator.Config;
 using TimberbornTerrainGenerator.Export.Models;
 using TimberbornTerrainGenerator.Terrain;
@@ -16,14 +15,22 @@ public class TimberbornMapExporter
         // Build MapData
         var mapData = BuildMapData(grid, entities, config);
 
-        // Serialize to JSON
-        var options = new JsonSerializerOptions
+        // Serialize to JSON using Newtonsoft.Json for compatibility with Timberborn
+        var settings = new JsonSerializerSettings
         {
-            WriteIndented = false, // Compact JSON
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
+            Formatting = Formatting.None, // Compact JSON
+            NullValueHandling = NullValueHandling.Include
         };
 
-        string json = JsonSerializer.Serialize(mapData, options);
+        string worldJson = JsonConvert.SerializeObject(mapData, settings);
+
+        // Build metadata
+        var metadata = new MapMetadata
+        {
+            Width = config.MapSize,
+            Height = config.MapSize
+        };
+        string metadataJson = JsonConvert.SerializeObject(metadata, settings);
 
         // Create ZIP archive (.timber file)
         string timberPath = Path.Combine(outputPath, $"{config.OutputName}.timber");
@@ -32,11 +39,50 @@ public class TimberbornMapExporter
             File.Delete(timberPath);
 
         using var archive = ZipFile.Open(timberPath, ZipArchiveMode.Create);
-        var entry = archive.CreateEntry("world.json");
 
-        using (var writer = new StreamWriter(entry.Open()))
+        // Add world.json
+        var worldEntry = archive.CreateEntry("world.json");
+        using (var writer = new StreamWriter(worldEntry.Open()))
         {
-            writer.Write(json);
+            writer.Write(worldJson);
+        }
+
+        // Add map_metadata.json
+        var metadataEntry = archive.CreateEntry("map_metadata.json");
+        using (var writer = new StreamWriter(metadataEntry.Open()))
+        {
+            writer.Write(metadataJson);
+        }
+
+        // Add version.txt
+        var versionEntry = archive.CreateEntry("version.txt");
+        using (var writer = new StreamWriter(versionEntry.Open()))
+        {
+            writer.Write("0.7.10.0");
+        }
+
+        // Add placeholder map_thumbnail.jpg (1x1 pixel JPEG)
+        var thumbnailEntry = archive.CreateEntry("map_thumbnail.jpg");
+        using (var stream = thumbnailEntry.Open())
+        {
+            // Minimal valid JPEG (1x1 black pixel)
+            byte[] minimalJpeg = new byte[] {
+                0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
+                0x01, 0x01, 0x00, 0x48, 0x00, 0x48, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43,
+                0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x00, 0x0B, 0x08, 0x00, 0x01,
+                0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xFF, 0xC4, 0x00, 0x14, 0x00, 0x01,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x03, 0xFF, 0xC4, 0x00, 0x14, 0x10, 0x01, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0xFF, 0xDA, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3F, 0x00,
+                0x37, 0xFF, 0xD9
+            };
+            stream.Write(minimalJpeg, 0, minimalJpeg.Length);
         }
 
         Console.WriteLine($"Map exported: {timberPath}");
@@ -44,16 +90,18 @@ public class TimberbornMapExporter
 
     private MapData BuildMapData(VoxelGrid grid, List<Entity> entities, GeneratorConfig config)
     {
-        // Build base heightmap array
-        string heightsArray = BuildHeightsArray(grid);
+        // Build voxels array (space-separated)
+        string voxelsArray = BuildVoxelsArray(grid);
 
-        // Build terrain block entities
-        var terrainEntities = BuildTerrainBlockEntities(grid);
+        // Build water and moisture arrays (space-separated zeros for dry terrain)
+        int arraySize = grid.Width * grid.Depth;
+        string waterArray = string.Join(" ", Enumerable.Repeat("0", arraySize));
+        string moistureArray = string.Join(" ", Enumerable.Repeat("0", arraySize));
+        string contaminationArray = string.Join(" ", Enumerable.Repeat("0", arraySize));
+        string evaporationArray = string.Join(" ", Enumerable.Repeat("1", arraySize)); // 1 = normal evaporation
 
-        // Combine all entities
-        var allEntities = new List<Entity>();
-        allEntities.AddRange(terrainEntities);
-        allEntities.AddRange(entities);
+        // Water outflows format: "0|0:0|0:0|0:0|0" (down|north:east|south:west)
+        string outflowsArray = string.Join(" ", Enumerable.Repeat("0|0:0|0:0|0:0|0", arraySize));
 
         return new MapData
         {
@@ -69,68 +117,74 @@ public class TimberbornMapExporter
                 },
                 TerrainMap = new TerrainMap
                 {
-                    Heights = new HeightsArray
+                    Voxels = new VoxelsArray
                     {
-                        Array = heightsArray
+                        Array = voxelsArray
                     }
                 },
-                CameraComponent = new CameraComponent
+                WaterMapNew = new WaterMapNew
                 {
-                    CameraState = new CameraState
+                    Levels = 1,
+                    WaterColumns = new WaterArray { Array = waterArray },
+                    ColumnOutflows = new WaterArray { Array = outflowsArray }
+                },
+                WaterEvaporationMap = new WaterEvaporationMap
+                {
+                    Levels = 1,
+                    EvaporationModifiers = new WaterArray { Array = evaporationArray }
+                },
+                SoilMoistureSimulator = new SoilMoistureSimulator
+                {
+                    MoistureLevels = new MoistureArray { Array = moistureArray }
+                },
+                SoilContaminationSimulator = new SoilContaminationSimulator
+                {
+                    ContaminationLevels = new ContaminationArray { Array = contaminationArray }
+                },
+                HazardousWeatherHistory = new HazardousWeatherHistory
+                {
+                    HistoryData = []
+                },
+                MapThumbnailCameraMover = new MapThumbnailCameraMover
+                {
+                    CurrentConfiguration = new CameraConfiguration
                     {
-                        Target = new Target
+                        Position = new Position
                         {
                             X = config.MapSize / 2.0f,
-                            Y = 0,
-                            Z = config.MapSize / 2.0f
-                        }
+                            Y = config.MapSize * 0.64f,
+                            Z = config.MapSize / -2.0f
+                        },
+                        Rotation = new Rotation
+                        {
+                            X = 0.342020124f,
+                            Y = 0.0f,
+                            Z = 0.0f,
+                            W = 0.9396926f
+                        },
+                        ShadowDistance = 150.0f
                     }
                 }
             },
-            Entities = allEntities
+            Entities = entities // No TerrainBlock entities - terrain is in Voxels array
         };
     }
 
-    private string BuildHeightsArray(VoxelGrid grid)
+    private string BuildVoxelsArray(VoxelGrid grid)
     {
-        var sb = new StringBuilder(grid.Width * grid.Depth);
+        var values = new List<string>();
 
-        // Heights array is legacy 2D terrain - we use TerrainBlocks for 3D voxel terrain
-        // Set to 0 for all positions since we're using full 3D TerrainBlock entities
+        // Voxels array is space-separated: "1" for solid, "0" for air
+        // Order: iterate through Y (height), then Z (depth), then X (width)
+        for (int y = 0; y < grid.Height; y++)
         for (int z = 0; z < grid.Depth; z++)
         for (int x = 0; x < grid.Width; x++)
         {
-            sb.Append('0');
+            var voxel = grid[new Vector3Int(x, y, z)];
+            values.Add(voxel == VoxelType.Solid ? "1" : "0");
         }
 
-        return sb.ToString();
+        return string.Join(" ", values);
     }
 
-    private List<Entity> BuildTerrainBlockEntities(VoxelGrid grid)
-    {
-        var entities = new List<Entity>();
-        int entityId = 1;
-
-        foreach (var pos in grid.GetAllSolidVoxels())
-        {
-            entities.Add(new Entity
-            {
-                Id = $"terrain-{entityId++}",
-                Template = "TerrainBlock",
-                Components = new List<object>
-                {
-                    new BlockObjectComponent
-                    {
-                        BlockObject = new BlockObject
-                        {
-                            Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                            Orientation = new Orientation(0)
-                        }
-                    }
-                }
-            });
-        }
-
-        return entities;
-    }
 }
