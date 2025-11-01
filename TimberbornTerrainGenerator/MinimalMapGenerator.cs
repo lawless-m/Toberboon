@@ -75,6 +75,8 @@ public class MinimalMapGenerator
                 },
                 SoilContaminationSimulator = new SoilContaminationSimulator
                 {
+                    Size = 1,
+                    ContaminationCandidates = new ContaminationArray { Array = contaminationArray },
                     ContaminationLevels = new ContaminationArray { Array = contaminationArray }
                 },
                 HazardousWeatherHistory = new HazardousWeatherHistory
