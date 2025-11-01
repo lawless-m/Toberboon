@@ -18,16 +18,18 @@ public class MinimalMapGenerator
         Console.WriteLine("Generating minimal 4x4 test map...");
 
         // Build voxels array: 4x4x23 = 368 voxels (Timberborn always expects height 23)
-        // First 3 layers (y=0,1,2) all solid, rest air (y=3-22)
+        // Timberborn coordinates: X,Y are horizontal, Z is vertical (height)
+        // First 3 layers (z=0,1,2) all solid, rest air (z=3-22)
         const int TIMBERBORN_HEIGHT = 23;
         const int TERRAIN_HEIGHT = 3;
+        const int MAP_SIZE = 4;
         var voxels = new List<string>();
 
-        for (int y = 0; y < TIMBERBORN_HEIGHT; y++)  // All 23 layers
-        for (int z = 0; z < 4; z++)  // 4 deep
-        for (int x = 0; x < 4; x++)  // 4 wide
+        for (int z = 0; z < TIMBERBORN_HEIGHT; z++)  // Z is height (0-22)
+        for (int y = 0; y < MAP_SIZE; y++)           // Y is horizontal depth (0-3)
+        for (int x = 0; x < MAP_SIZE; x++)           // X is horizontal width (0-3)
         {
-            voxels.Add(y < TERRAIN_HEIGHT ? "1" : "0"); // Solid for first 3 layers, air above
+            voxels.Add(z < TERRAIN_HEIGHT ? "1" : "0"); // Solid for first 3 height layers, air above
         }
 
         string voxelsArray = string.Join(" ", voxels);
@@ -106,7 +108,9 @@ public class MinimalMapGenerator
             },
             Entities =
             [
-                // Starting location on top of terrain (Y=3 is first air layer above solid blocks)
+                // Starting location on top of terrain
+                // Timberborn coordinates: X,Y are horizontal (map grid), Z is vertical (height)
+                // Terrain is solid at Z=0,1,2 so entities go at Z=3
                 new Entity
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -117,9 +121,9 @@ public class MinimalMapGenerator
                         {
                             ["Coordinates"] = new Dictionary<string, int>
                             {
-                                ["X"] = 1,
-                                ["Y"] = 3,  // Changed from 0 to 3 - on top of terrain
-                                ["Z"] = 1
+                                ["X"] = 1,  // Horizontal position
+                                ["Y"] = 1,  // Horizontal position
+                                ["Z"] = 3   // Height - on top of 3-layer terrain
                             }
                         }
                     }
@@ -140,9 +144,9 @@ public class MinimalMapGenerator
                         {
                             ["Coordinates"] = new Dictionary<string, int>
                             {
-                                ["X"] = 2,
-                                ["Y"] = 3,  // Changed from 0 to 3 - on top of terrain
-                                ["Z"] = 2
+                                ["X"] = 2,  // Horizontal position
+                                ["Y"] = 2,  // Horizontal position
+                                ["Z"] = 3   // Height - on top of 3-layer terrain
                             },
                             ["Orientation"] = "Cw0"
                         }
