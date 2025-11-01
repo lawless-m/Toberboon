@@ -91,7 +91,7 @@ public class VegetationPlacer
     {
         return new Entity
         {
-            Id = $"tree-{id}",
+            Id = Guid.NewGuid().ToString(),
             Template = treeType,
             Components = new Dictionary<string, object>
             {
@@ -116,7 +116,7 @@ public class VegetationPlacer
     {
         return new Entity
         {
-            Id = $"bush-{id}",
+            Id = Guid.NewGuid().ToString(),
             Template = bushType,
             Components = new Dictionary<string, object>
             {

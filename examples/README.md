@@ -18,7 +18,7 @@ This folder contains example `.timber` terrain maps for testing and reference.
 
 The following maps are generated using the TimberbornTerrainGenerator with the corrected format:
 
-### SimpleHills.timber (5.3 KB)
+### SimpleHills.timber (16 KB)
 - **Size:** 32×32
 - **Seed:** 1000
 - **Max Height:** 30
@@ -27,7 +27,7 @@ The following maps are generated using the TimberbornTerrainGenerator with the c
 - **Features:** Basic heightmap terrain, no caves
 - **Description:** Simple rolling hills for testing basic terrain generation. Great for tutorials and learning the generator.
 
-### CaveWorld.timber (22 KB)
+### CaveWorld.timber (61 KB)
 - **Size:** 64×64
 - **Seed:** 12345
 - **Max Height:** 45
@@ -36,7 +36,7 @@ The following maps are generated using the TimberbornTerrainGenerator with the c
 - **Features:** Caves, overhangs, water sources, vegetation
 - **Description:** Full-featured terrain with extensive cave systems. Perfect for exploring underground construction.
 
-### LargeMap.timber (74 KB)
+### LargeMap.timber (228 KB)
 - **Size:** 128×128
 - **Seed:** 42
 - **Max Height:** 50

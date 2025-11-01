@@ -21,7 +21,6 @@ public class WaterSourcePlacer
                                  .Take(settings.Count)
                                  .ToList();
 
-        int entityId = 1;
         foreach (var pos in selected)
         {
             float strength = settings.MinStrength +
@@ -30,7 +29,7 @@ public class WaterSourcePlacer
 
             sources.Add(new Entity
             {
-                Id = $"watersource-{entityId++}",
+                Id = Guid.NewGuid().ToString(),
                 Template = "WaterSource",
                 Components = new Dictionary<string, object>
                 {
