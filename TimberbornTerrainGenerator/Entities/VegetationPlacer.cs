@@ -93,22 +93,20 @@ public class VegetationPlacer
         {
             Id = $"tree-{id}",
             Template = treeType,
-            Components = new List<object>
+            Components = new Dictionary<string, object>
             {
-                new BlockObjectComponent
+                ["BlockObject"] = new Dictionary<string, object>
                 {
-                    BlockObject = new BlockObject
+                    ["Coordinates"] = new Dictionary<string, int>
                     {
-                        Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                        Orientation = new Orientation(0)
+                        ["X"] = pos.X,
+                        ["Y"] = pos.Y,
+                        ["Z"] = pos.Z
                     }
                 },
-                new GrowableComponent
+                ["Growable"] = new Dictionary<string, float>
                 {
-                    Growable = new GrowableData
-                    {
-                        GrowthProgress = 1.0f // Fully grown
-                    }
+                    ["GrowthProgress"] = 1.0f // Fully grown
                 }
             }
         };
@@ -120,22 +118,20 @@ public class VegetationPlacer
         {
             Id = $"bush-{id}",
             Template = bushType,
-            Components = new List<object>
+            Components = new Dictionary<string, object>
             {
-                new BlockObjectComponent
+                ["BlockObject"] = new Dictionary<string, object>
                 {
-                    BlockObject = new BlockObject
+                    ["Coordinates"] = new Dictionary<string, int>
                     {
-                        Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                        Orientation = new Orientation(0)
+                        ["X"] = pos.X,
+                        ["Y"] = pos.Y,
+                        ["Z"] = pos.Z
                     }
                 },
-                new GrowableComponent
+                ["Growable"] = new Dictionary<string, float>
                 {
-                    Growable = new GrowableData
-                    {
-                        GrowthProgress = 1.0f
-                    }
+                    ["GrowthProgress"] = 1.0f
                 }
             }
         };

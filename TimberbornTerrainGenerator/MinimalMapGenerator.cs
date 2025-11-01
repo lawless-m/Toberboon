@@ -104,7 +104,51 @@ public class MinimalMapGenerator
                     }
                 }
             },
-            Entities = [] // No TerrainBlock entities - terrain is in Voxels array
+            Entities =
+            [
+                // Starting location for the game
+                new Entity
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Template = "StartingLocation",
+                    Components = new Dictionary<string, object>
+                    {
+                        ["BlockObject"] = new Dictionary<string, object>
+                        {
+                            ["Coordinates"] = new Dictionary<string, int>
+                            {
+                                ["X"] = 1,
+                                ["Y"] = 0,
+                                ["Z"] = 1
+                            }
+                        }
+                    }
+                },
+                // Water source
+                new Entity
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Template = "WaterSource",
+                    Components = new Dictionary<string, object>
+                    {
+                        ["WaterSource"] = new Dictionary<string, float>
+                        {
+                            ["SpecifiedStrength"] = 1.0f,
+                            ["CurrentStrength"] = 1.0f
+                        },
+                        ["BlockObject"] = new Dictionary<string, object>
+                        {
+                            ["Coordinates"] = new Dictionary<string, int>
+                            {
+                                ["X"] = 2,
+                                ["Y"] = 0,
+                                ["Z"] = 2
+                            },
+                            ["Orientation"] = "Cw0"
+                        }
+                    }
+                }
+            ]
         };
 
         // Serialize to JSON using Newtonsoft.Json for compatibility with Timberborn
@@ -179,7 +223,7 @@ public class MinimalMapGenerator
         Console.WriteLine($"✓ Created minimal map: {timberPath}");
         Console.WriteLine($"  Size: 4x4 (height 23 - Timberborn standard)");
         Console.WriteLine($"  Voxels: 368 total (48 solid terrain, 320 air)");
-        Console.WriteLine($"  Entities: 0 (terrain defined in Voxels array)");
+        Console.WriteLine($"  Entities: 2 (StartingLocation, WaterSource)");
         Console.WriteLine($"  File size: {new FileInfo(timberPath).Length / 1024.0:F1} KB");
     }
 }

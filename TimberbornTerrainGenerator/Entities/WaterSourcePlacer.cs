@@ -32,22 +32,22 @@ public class WaterSourcePlacer
             {
                 Id = $"watersource-{entityId++}",
                 Template = "WaterSource",
-                Components = new List<object>
+                Components = new Dictionary<string, object>
                 {
-                    new BlockObjectComponent
+                    ["WaterSource"] = new Dictionary<string, float>
                     {
-                        BlockObject = new BlockObject
-                        {
-                            Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                            Orientation = new Orientation(0)
-                        }
+                        ["SpecifiedStrength"] = strength,
+                        ["CurrentStrength"] = strength
                     },
-                    new WaterSourceComponent
+                    ["BlockObject"] = new Dictionary<string, object>
                     {
-                        WaterSource = new WaterSourceData
+                        ["Coordinates"] = new Dictionary<string, int>
                         {
-                            SpecifiedStrength = strength
-                        }
+                            ["X"] = pos.X,
+                            ["Y"] = pos.Y,
+                            ["Z"] = pos.Z
+                        },
+                        ["Orientation"] = "Cw0"
                     }
                 }
             });
