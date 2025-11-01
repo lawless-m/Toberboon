@@ -40,7 +40,8 @@ public class VegetationPlacer
 
         foreach (var pos in selectedBushes)
         {
-            string bushType = random.NextSingle() > 0.5f ? "BlueberryBush" : "Dandelion";
+            // Only use BlueberryBush - it's the main valid bush type in Timberborn
+            string bushType = "BlueberryBush";
             entities.Add(CreateBush(pos, bushType, entityId++));
         }
 
@@ -99,9 +100,10 @@ public class VegetationPlacer
                 {
                     ["Coordinates"] = new Dictionary<string, int>
                     {
-                        ["X"] = pos.X,
-                        ["Y"] = pos.Y,
-                        ["Z"] = pos.Z
+                        // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                        ["X"] = pos.X,  // Grid X -> Timberborn X
+                        ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                        ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
                     }
                 },
                 ["Growable"] = new Dictionary<string, float>
@@ -124,9 +126,10 @@ public class VegetationPlacer
                 {
                     ["Coordinates"] = new Dictionary<string, int>
                     {
-                        ["X"] = pos.X,
-                        ["Y"] = pos.Y,
-                        ["Z"] = pos.Z
+                        // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                        ["X"] = pos.X,  // Grid X -> Timberborn X
+                        ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                        ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
                     }
                 },
                 ["Growable"] = new Dictionary<string, float>

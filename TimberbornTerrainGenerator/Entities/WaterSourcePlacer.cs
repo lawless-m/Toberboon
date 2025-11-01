@@ -42,9 +42,10 @@ public class WaterSourcePlacer
                     {
                         ["Coordinates"] = new Dictionary<string, int>
                         {
-                            ["X"] = pos.X,
-                            ["Y"] = pos.Y,
-                            ["Z"] = pos.Z
+                            // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                            ["X"] = pos.X,  // Grid X -> Timberborn X
+                            ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                            ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
                         },
                         ["Orientation"] = "Cw0"
                     }
