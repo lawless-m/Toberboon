@@ -13,28 +13,49 @@ public class StartingLocationPlacer
         var centerX = grid.Width / 2;
         var centerZ = grid.Depth / 2;
 
-        // Search for a flat area in expanding circles from center
+        // Search for a 6x6 flat area in expanding circles from center
         // Prioritize locations that won't be clamped (height <= 21 so entity at height+1 = 22 max)
-        var location = FindFlatLocation(grid, centerX, centerZ, searchRadius: 20, maxHeight: 21);
+        var location = FindFlatLocation(grid, centerX, centerZ, searchRadius: 30, maxHeight: 21, size: 6);
 
         if (location == null)
         {
-            // Try again with a larger search radius and allow any height
-            location = FindFlatLocation(grid, centerX, centerZ, searchRadius: grid.Width / 2, maxHeight: int.MaxValue);
+            // Try smaller 4x4 area with larger search radius
+            location = FindFlatLocation(grid, centerX, centerZ, searchRadius: grid.Width / 2, maxHeight: 21, size: 4);
         }
 
         if (location == null)
         {
-            // Final fallback: scan entire map for ANY flat area
-            location = FindAnyFlatLocation(grid);
+            // Try 3x3 area (minimum for StartingLocation)
+            location = FindFlatLocation(grid, centerX, centerZ, searchRadius: grid.Width / 2, maxHeight: int.MaxValue, size: 3);
         }
 
         if (location == null)
         {
-            // Last resort: just use center regardless of flatness, clamped to safe height
-            int surfaceY = Math.Min(grid.GetSurfaceHeight(centerX, centerZ), 21);
-            location = new Vector3Int(centerX, surfaceY + 1, centerZ);
+            // Final fallback: scan entire map for ANY flat 6x6 area
+            location = FindAnyFlatLocation(grid, size: 6);
         }
+
+        if (location == null)
+        {
+            // Try 4x4 scan
+            location = FindAnyFlatLocation(grid, size: 4);
+        }
+
+        if (location == null)
+        {
+            // Try 3x3 scan
+            location = FindAnyFlatLocation(grid, size: 3);
+        }
+
+        if (location == null)
+        {
+            // Last resort: CREATE a 6x6 flat area at center by flattening terrain
+            Console.WriteLine("  No suitable flat area found - creating 6x6 platform at center");
+            int targetY = Math.Min(grid.GetSurfaceHeight(centerX, centerZ), 20); // Leave room for entity
+            location = CreateFlatPlatform(grid, centerX, centerZ, size: 6, targetHeight: targetY);
+        }
+
+        Console.WriteLine($"  StartingLocation placed at ({location.Value.X}, {location.Value.Z}) height={location.Value.Y}");
 
         return new Entity
         {
@@ -55,9 +76,11 @@ public class StartingLocationPlacer
         };
     }
 
-    private Vector3Int? FindFlatLocation(VoxelGrid grid, int centerX, int centerZ, int searchRadius, int maxHeight)
+    private Vector3Int? FindFlatLocation(VoxelGrid grid, int centerX, int centerZ, int searchRadius, int maxHeight, int size)
     {
-        // Try to find a flat 3x3 area
+        // Try to find a flat area of given size
+        int margin = size / 2 + 1;
+
         for (int radius = 0; radius < searchRadius; radius++)
         {
             for (int dx = -radius; dx <= radius; dx++)
@@ -70,11 +93,11 @@ public class StartingLocationPlacer
                 int x = centerX + dx;
                 int z = centerZ + dz;
 
-                if (x < 3 || x >= grid.Width - 3 || z < 3 || z >= grid.Depth - 3)
+                if (x < margin || x >= grid.Width - margin || z < margin || z >= grid.Depth - margin)
                     continue;
 
                 // Check if this location and surrounding area is relatively flat
-                if (IsFlatArea(grid, x, z, size: 3))
+                if (IsFlatArea(grid, x, z, size))
                 {
                     int surfaceY = grid.GetSurfaceHeight(x, z);
 
@@ -90,13 +113,15 @@ public class StartingLocationPlacer
         return null;
     }
 
-    private Vector3Int? FindAnyFlatLocation(VoxelGrid grid)
+    private Vector3Int? FindAnyFlatLocation(VoxelGrid grid, int size)
     {
-        // Scan entire map for ANY flat 3x3 area, prioritizing lower heights
+        // Scan entire map for ANY flat area of given size, prioritizing lower heights
+        int margin = size / 2 + 1;
+
         for (int targetHeight = 0; targetHeight <= 21; targetHeight++)
         {
-            for (int x = 3; x < grid.Width - 3; x += 2) // Sample every 2 blocks for performance
-            for (int z = 3; z < grid.Depth - 3; z += 2)
+            for (int x = margin; x < grid.Width - margin; x += 2) // Sample every 2 blocks for performance
+            for (int z = margin; z < grid.Depth - margin; z += 2)
             {
                 int surfaceY = grid.GetSurfaceHeight(x, z);
 
@@ -104,7 +129,7 @@ public class StartingLocationPlacer
                 if (surfaceY != targetHeight)
                     continue;
 
-                if (IsFlatArea(grid, x, z, size: 3))
+                if (IsFlatArea(grid, x, z, size))
                 {
                     return new Vector3Int(x, surfaceY + 1, z);
                 }
@@ -138,5 +163,47 @@ public class StartingLocationPlacer
         }
 
         return true;
+    }
+
+    private Vector3Int CreateFlatPlatform(VoxelGrid grid, int centerX, int centerZ, int size, int targetHeight)
+    {
+        // Create a flat platform by modifying the terrain minimally
+        int halfSize = size / 2;
+
+        for (int x = centerX - halfSize; x <= centerX + halfSize; x++)
+        for (int z = centerZ - halfSize; z <= centerZ + halfSize; z++)
+        {
+            if (x < 0 || x >= grid.Width || z < 0 || z >= grid.Depth)
+                continue;
+
+            int currentHeight = grid.GetSurfaceHeight(x, z);
+
+            // Only modify if height differs from target
+            if (currentHeight < targetHeight)
+            {
+                // Fill up to target height
+                for (int y = currentHeight + 1; y <= targetHeight; y++)
+                {
+                    grid[new Vector3Int(x, y, z)] = VoxelType.Solid;
+                }
+            }
+            else if (currentHeight > targetHeight)
+            {
+                // Remove blocks down to target height
+                for (int y = targetHeight + 1; y <= currentHeight && y < grid.Height; y++)
+                {
+                    grid[new Vector3Int(x, y, z)] = VoxelType.Air;
+                }
+            }
+
+            // Clear air space above platform (5 blocks for building)
+            for (int y = targetHeight + 1; y <= Math.Min(targetHeight + 5, grid.Height - 1); y++)
+            {
+                grid[new Vector3Int(x, y, z)] = VoxelType.Air;
+            }
+        }
+
+        // Return the center position for entity placement (one block above ground)
+        return new Vector3Int(centerX, targetHeight + 1, centerZ);
     }
 }

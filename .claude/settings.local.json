@@ -10,7 +10,21 @@
       "Bash(git push)",
       "Bash(where:*)",
       "Bash(convert --version:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(unzip:*)",
+      "Bash(python3:*)",
+      "Bash(dotnet run:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File:*)",
+      "Bash(dotnet build:*)",
+      "Bash(python:*)",
+      "Bash(for map in SimpleHills CaveWorld LargeMap)",
+      "Bash(do echo \"=== $map ===\")",
+      "Bash(done)",
+      "Bash(git log:*)",
+      "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\SimpleHills.timber\" examples )",
+      "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\CaveWorld.timber\" examples )",
+      "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\LargeMap.timber\" examples)",
+      "Bash(powershell.exe:*)"
     ],
     "deny": [],
     "ask": []
