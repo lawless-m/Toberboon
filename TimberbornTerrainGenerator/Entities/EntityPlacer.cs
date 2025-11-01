@@ -10,6 +10,10 @@ public class EntityPlacer
     {
         var entities = new List<Entity>();
 
+        Console.WriteLine("Placing starting location...");
+        var startingPlacer = new StartingLocationPlacer();
+        entities.Add(startingPlacer.PlaceStartingLocation(grid, config));
+
         Console.WriteLine("Placing water sources...");
         var waterPlacer = new WaterSourcePlacer();
         entities.AddRange(waterPlacer.PlaceWaterSources(grid, config));

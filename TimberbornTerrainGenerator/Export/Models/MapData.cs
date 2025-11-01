@@ -145,6 +145,12 @@ public record MoistureArray
 
 public record SoilContaminationSimulator
 {
+    [JsonProperty("Size")]
+    public int Size { get; init; } = 1;
+
+    [JsonProperty("ContaminationCandidates")]
+    public ContaminationArray ContaminationCandidates { get; init; } = new();
+
     [JsonProperty("ContaminationLevels")]
     public ContaminationArray ContaminationLevels { get; init; } = new();
 }

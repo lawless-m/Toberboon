@@ -40,7 +40,8 @@ public class VegetationPlacer
 
         foreach (var pos in selectedBushes)
         {
-            string bushType = random.NextSingle() > 0.5f ? "BlueberryBush" : "Dandelion";
+            // Only use BlueberryBush - it's the main valid bush type in Timberborn
+            string bushType = "BlueberryBush";
             entities.Add(CreateBush(pos, bushType, entityId++));
         }
 
@@ -91,24 +92,23 @@ public class VegetationPlacer
     {
         return new Entity
         {
-            Id = $"tree-{id}",
+            Id = Guid.NewGuid().ToString(),
             Template = treeType,
-            Components = new List<object>
+            Components = new Dictionary<string, object>
             {
-                new BlockObjectComponent
+                ["BlockObject"] = new Dictionary<string, object>
                 {
-                    BlockObject = new BlockObject
+                    ["Coordinates"] = new Dictionary<string, int>
                     {
-                        Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                        Orientation = new Orientation(0)
+                        // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                        ["X"] = pos.X,  // Grid X -> Timberborn X
+                        ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                        ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
                     }
                 },
-                new GrowableComponent
+                ["Growable"] = new Dictionary<string, float>
                 {
-                    Growable = new GrowableData
-                    {
-                        GrowthProgress = 1.0f // Fully grown
-                    }
+                    ["GrowthProgress"] = 1.0f // Fully grown
                 }
             }
         };
@@ -118,24 +118,23 @@ public class VegetationPlacer
     {
         return new Entity
         {
-            Id = $"bush-{id}",
+            Id = Guid.NewGuid().ToString(),
             Template = bushType,
-            Components = new List<object>
+            Components = new Dictionary<string, object>
             {
-                new BlockObjectComponent
+                ["BlockObject"] = new Dictionary<string, object>
                 {
-                    BlockObject = new BlockObject
+                    ["Coordinates"] = new Dictionary<string, int>
                     {
-                        Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                        Orientation = new Orientation(0)
+                        // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                        ["X"] = pos.X,  // Grid X -> Timberborn X
+                        ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                        ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
                     }
                 },
-                new GrowableComponent
+                ["Growable"] = new Dictionary<string, float>
                 {
-                    Growable = new GrowableData
-                    {
-                        GrowthProgress = 1.0f
-                    }
+                    ["GrowthProgress"] = 1.0f
                 }
             }
         };

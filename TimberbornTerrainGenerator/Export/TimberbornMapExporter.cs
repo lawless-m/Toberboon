@@ -139,6 +139,8 @@ public class TimberbornMapExporter
                 },
                 SoilContaminationSimulator = new SoilContaminationSimulator
                 {
+                    Size = 1,
+                    ContaminationCandidates = new ContaminationArray { Array = contaminationArray },
                     ContaminationLevels = new ContaminationArray { Array = contaminationArray }
                 },
                 HazardousWeatherHistory = new HazardousWeatherHistory
@@ -172,16 +174,33 @@ public class TimberbornMapExporter
 
     private string BuildVoxelsArray(VoxelGrid grid)
     {
+        const int TIMBERBORN_HEIGHT = 23; // Timberborn always expects 23 vertical layers
         var values = new List<string>();
 
         // Voxels array is space-separated: "1" for solid, "0" for air
-        // Order: iterate through Y (height), then Z (depth), then X (width)
-        for (int y = 0; y < grid.Height; y++)
-        for (int z = 0; z < grid.Depth; z++)
-        for (int x = 0; x < grid.Width; x++)
+        // TIMBERBORN COORDINATES: X,Y are horizontal, Z is vertical (height)
+        // OUR COORDINATES: X,Z are horizontal, Y is vertical (height)
+        // Order: iterate through Z (Timberborn height 0-22), then Y (Timberborn depth), then X (Timberborn width)
+        // CRITICAL: Always generate exactly width * depth * 23 voxels
+        for (int timberbornZ = 0; timberbornZ < TIMBERBORN_HEIGHT; timberbornZ++)  // Timberborn Z = our Y (height)
+        for (int timberbornY = 0; timberbornY < grid.Depth; timberbornY++)         // Timberborn Y = our Z (depth)
+        for (int timberbornX = 0; timberbornX < grid.Width; timberbornX++)         // Timberborn X = our X (width)
         {
-            var voxel = grid[new Vector3Int(x, y, z)];
-            values.Add(voxel == VoxelType.Solid ? "1" : "0");
+            // Convert Timberborn coords to our grid coords
+            int ourY = timberbornZ;  // Timberborn Z -> our Y (height)
+            int ourZ = timberbornY;  // Timberborn Y -> our Z (depth)
+            int ourX = timberbornX;  // Timberborn X -> our X (width)
+
+            // If height is beyond our grid height, it's air
+            if (ourY >= grid.Height)
+            {
+                values.Add("0");
+            }
+            else
+            {
+                var voxel = grid[new Vector3Int(ourX, ourY, ourZ)];
+                values.Add(voxel == VoxelType.Solid ? "1" : "0");
+            }
         }
 
         return string.Join(" ", values);

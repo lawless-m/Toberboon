@@ -11,5 +11,5 @@ public record Entity
     public string Template { get; init; } = "";
 
     [JsonProperty("Components")]
-    public List<object> Components { get; init; } = [];
+    public Dictionary<string, object> Components { get; init; } = new();
 }

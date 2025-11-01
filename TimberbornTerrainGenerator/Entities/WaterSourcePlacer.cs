@@ -21,7 +21,6 @@ public class WaterSourcePlacer
                                  .Take(settings.Count)
                                  .ToList();
 
-        int entityId = 1;
         foreach (var pos in selected)
         {
             float strength = settings.MinStrength +
@@ -30,24 +29,25 @@ public class WaterSourcePlacer
 
             sources.Add(new Entity
             {
-                Id = $"watersource-{entityId++}",
+                Id = Guid.NewGuid().ToString(),
                 Template = "WaterSource",
-                Components = new List<object>
+                Components = new Dictionary<string, object>
                 {
-                    new BlockObjectComponent
+                    ["WaterSource"] = new Dictionary<string, float>
                     {
-                        BlockObject = new BlockObject
-                        {
-                            Coordinates = new Coordinates(pos.X, pos.Y, pos.Z),
-                            Orientation = new Orientation(0)
-                        }
+                        ["SpecifiedStrength"] = strength,
+                        ["CurrentStrength"] = strength
                     },
-                    new WaterSourceComponent
+                    ["BlockObject"] = new Dictionary<string, object>
                     {
-                        WaterSource = new WaterSourceData
+                        ["Coordinates"] = new Dictionary<string, int>
                         {
-                            SpecifiedStrength = strength
-                        }
+                            // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
+                            ["X"] = pos.X,  // Grid X -> Timberborn X
+                            ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
+                            ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
+                        },
+                        ["Orientation"] = "Cw0"
                     }
                 }
             });
