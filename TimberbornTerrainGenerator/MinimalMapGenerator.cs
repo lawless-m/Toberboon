@@ -106,7 +106,7 @@ public class MinimalMapGenerator
             },
             Entities =
             [
-                // Starting location for the game
+                // Starting location on top of terrain (Y=3 is first air layer above solid blocks)
                 new Entity
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -118,13 +118,13 @@ public class MinimalMapGenerator
                             ["Coordinates"] = new Dictionary<string, int>
                             {
                                 ["X"] = 1,
-                                ["Y"] = 0,
+                                ["Y"] = 3,  // Changed from 0 to 3 - on top of terrain
                                 ["Z"] = 1
                             }
                         }
                     }
                 },
-                // Water source
+                // Water source on top of terrain
                 new Entity
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -141,7 +141,7 @@ public class MinimalMapGenerator
                             ["Coordinates"] = new Dictionary<string, int>
                             {
                                 ["X"] = 2,
-                                ["Y"] = 0,
+                                ["Y"] = 3,  // Changed from 0 to 3 - on top of terrain
                                 ["Z"] = 2
                             },
                             ["Orientation"] = "Cw0"
