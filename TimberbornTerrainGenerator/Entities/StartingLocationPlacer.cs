@@ -14,12 +14,25 @@ public class StartingLocationPlacer
         var centerZ = grid.Depth / 2;
 
         // Search for a flat area in expanding circles from center
-        var location = FindFlatLocation(grid, centerX, centerZ, searchRadius: 20);
+        // Prioritize locations that won't be clamped (height <= 21 so entity at height+1 = 22 max)
+        var location = FindFlatLocation(grid, centerX, centerZ, searchRadius: 20, maxHeight: 21);
 
         if (location == null)
         {
-            // Fallback: just use center regardless of flatness
-            int surfaceY = grid.GetSurfaceHeight(centerX, centerZ);
+            // Try again with a larger search radius and allow any height
+            location = FindFlatLocation(grid, centerX, centerZ, searchRadius: grid.Width / 2, maxHeight: int.MaxValue);
+        }
+
+        if (location == null)
+        {
+            // Final fallback: scan entire map for ANY flat area
+            location = FindAnyFlatLocation(grid);
+        }
+
+        if (location == null)
+        {
+            // Last resort: just use center regardless of flatness, clamped to safe height
+            int surfaceY = Math.Min(grid.GetSurfaceHeight(centerX, centerZ), 21);
             location = new Vector3Int(centerX, surfaceY + 1, centerZ);
         }
 
@@ -35,14 +48,14 @@ public class StartingLocationPlacer
                     {
                         ["X"] = location.Value.X,
                         ["Y"] = location.Value.Z,  // Timberborn Y is our Z
-                        ["Z"] = location.Value.Y   // Timberborn Z is our Y (height)
+                        ["Z"] = Math.Min(location.Value.Y, 22)   // Timberborn Z is our Y (height), clamped to max 22
                     }
                 }
             }
         };
     }
 
-    private Vector3Int? FindFlatLocation(VoxelGrid grid, int centerX, int centerZ, int searchRadius)
+    private Vector3Int? FindFlatLocation(VoxelGrid grid, int centerX, int centerZ, int searchRadius, int maxHeight)
     {
         // Try to find a flat 3x3 area
         for (int radius = 0; radius < searchRadius; radius++)
@@ -64,6 +77,35 @@ public class StartingLocationPlacer
                 if (IsFlatArea(grid, x, z, size: 3))
                 {
                     int surfaceY = grid.GetSurfaceHeight(x, z);
+
+                    // Skip if height is too high (entity would be placed at surfaceY + 1)
+                    if (surfaceY > maxHeight)
+                        continue;
+
+                    return new Vector3Int(x, surfaceY + 1, z);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private Vector3Int? FindAnyFlatLocation(VoxelGrid grid)
+    {
+        // Scan entire map for ANY flat 3x3 area, prioritizing lower heights
+        for (int targetHeight = 0; targetHeight <= 21; targetHeight++)
+        {
+            for (int x = 3; x < grid.Width - 3; x += 2) // Sample every 2 blocks for performance
+            for (int z = 3; z < grid.Depth - 3; z += 2)
+            {
+                int surfaceY = grid.GetSurfaceHeight(x, z);
+
+                // Only check areas at the current target height
+                if (surfaceY != targetHeight)
+                    continue;
+
+                if (IsFlatArea(grid, x, z, size: 3))
+                {
                     return new Vector3Int(x, surfaceY + 1, z);
                 }
             }

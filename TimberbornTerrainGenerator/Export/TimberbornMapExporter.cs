@@ -175,6 +175,7 @@ public class TimberbornMapExporter
     private string BuildVoxelsArray(VoxelGrid grid)
     {
         const int TIMBERBORN_HEIGHT = 23; // Timberborn always expects 23 vertical layers
+        const int MAX_TERRAIN_HEIGHT = 22; // Layer 22 (Z=22) MUST be air for entities!
         var values = new List<string>();
 
         // Voxels array is space-separated: "1" for solid, "0" for air
@@ -182,6 +183,7 @@ public class TimberbornMapExporter
         // OUR COORDINATES: X,Z are horizontal, Y is vertical (height)
         // Order: iterate through Z (Timberborn height 0-22), then Y (Timberborn depth), then X (Timberborn width)
         // CRITICAL: Always generate exactly width * depth * 23 voxels
+        // CRITICAL: Z=22 must ALWAYS be AIR so entities can be placed there!
         for (int timberbornZ = 0; timberbornZ < TIMBERBORN_HEIGHT; timberbornZ++)  // Timberborn Z = our Y (height)
         for (int timberbornY = 0; timberbornY < grid.Depth; timberbornY++)         // Timberborn Y = our Z (depth)
         for (int timberbornX = 0; timberbornX < grid.Width; timberbornX++)         // Timberborn X = our X (width)
@@ -191,8 +193,13 @@ public class TimberbornMapExporter
             int ourZ = timberbornY;  // Timberborn Y -> our Z (depth)
             int ourX = timberbornX;  // Timberborn X -> our X (width)
 
+            // FORCE Z=22 to always be air (entities need this layer)
+            if (timberbornZ >= MAX_TERRAIN_HEIGHT)
+            {
+                values.Add("0");
+            }
             // If height is beyond our grid height, it's air
-            if (ourY >= grid.Height)
+            else if (ourY >= grid.Height)
             {
                 values.Add("0");
             }

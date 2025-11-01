@@ -45,7 +45,7 @@ public class WaterSourcePlacer
                             // Coordinate conversion: Grid (X,Y,Z) where Y=height -> Timberborn (X,Y,Z) where Z=height
                             ["X"] = pos.X,  // Grid X -> Timberborn X
                             ["Y"] = pos.Z,  // Grid Z -> Timberborn Y
-                            ["Z"] = pos.Y   // Grid Y (height) -> Timberborn Z (height)
+                            ["Z"] = Math.Min(pos.Y, 22)   // Grid Y (height) -> Timberborn Z (height), clamped to max 22
                         },
                         ["Orientation"] = "Cw0"
                     }
