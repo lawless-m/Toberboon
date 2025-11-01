@@ -15,27 +15,27 @@ public class MinimalMapGenerator
 {
     public static void Generate(string outputPath)
     {
-        Console.WriteLine("Generating minimal 4x4 test map...");
+        Console.WriteLine("Generating minimal 8x8 test map...");
 
-        // Build voxels array: 4x4x23 = 368 voxels (Timberborn always expects height 23)
+        // Build voxels array: 8x8x23 = 1472 voxels (Timberborn always expects height 23)
         // Timberborn coordinates: X,Y are horizontal, Z is vertical (height)
         // First 3 layers (z=0,1,2) all solid, rest air (z=3-22)
         const int TIMBERBORN_HEIGHT = 23;
         const int TERRAIN_HEIGHT = 3;
-        const int MAP_SIZE = 4;
+        const int MAP_SIZE = 8;
         var voxels = new List<string>();
 
         for (int z = 0; z < TIMBERBORN_HEIGHT; z++)  // Z is height (0-22)
-        for (int y = 0; y < MAP_SIZE; y++)           // Y is horizontal depth (0-3)
-        for (int x = 0; x < MAP_SIZE; x++)           // X is horizontal width (0-3)
+        for (int y = 0; y < MAP_SIZE; y++)           // Y is horizontal depth (0-7)
+        for (int x = 0; x < MAP_SIZE; x++)           // X is horizontal width (0-7)
         {
             voxels.Add(z < TERRAIN_HEIGHT ? "1" : "0"); // Solid for first 3 height layers, air above
         }
 
         string voxelsArray = string.Join(" ", voxels);
 
-        // Water and moisture arrays for 4x4 surface
-        int surfaceSize = 16; // 4x4
+        // Water and moisture arrays for 8x8 surface
+        int surfaceSize = 64; // 8x8
         string waterArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
         string moistureArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
         string contaminationArray = string.Join(" ", Enumerable.Repeat("0", surfaceSize));
@@ -51,7 +51,7 @@ public class MinimalMapGenerator
             {
                 MapSize = new MapSize
                 {
-                    Size = new Size { X = 4, Y = 4 }
+                    Size = new Size { X = 8, Y = 8 }
                 },
                 TerrainMap = new TerrainMap
                 {
@@ -91,9 +91,9 @@ public class MinimalMapGenerator
                     {
                         Position = new Position
                         {
-                            X = 2.0f,
-                            Y = 2.5711503f,
-                            Z = -1.064178f
+                            X = 4.0f,  // Center of 8x8 map
+                            Y = 5.1423f,  // Scaled for 8x8
+                            Z = -2.128f   // Scaled for 8x8
                         },
                         Rotation = new Rotation
                         {
@@ -108,7 +108,7 @@ public class MinimalMapGenerator
             },
             Entities =
             [
-                // Starting location on top of terrain
+                // Starting location on top of terrain - placed with room to expand
                 // Timberborn coordinates: X,Y are horizontal (map grid), Z is vertical (height)
                 // Terrain is solid at Z=0,1,2 so entities go at Z=3
                 new Entity
@@ -121,14 +121,14 @@ public class MinimalMapGenerator
                         {
                             ["Coordinates"] = new Dictionary<string, int>
                             {
-                                ["X"] = 1,  // Horizontal position
-                                ["Y"] = 1,  // Horizontal position
+                                ["X"] = 2,  // Horizontal position (plenty of room)
+                                ["Y"] = 2,  // Horizontal position
                                 ["Z"] = 3   // Height - on top of 3-layer terrain
                             }
                         }
                     }
                 },
-                // Water source on top of terrain
+                // Water source on top of terrain - placed away from starting location
                 new Entity
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -144,8 +144,8 @@ public class MinimalMapGenerator
                         {
                             ["Coordinates"] = new Dictionary<string, int>
                             {
-                                ["X"] = 2,  // Horizontal position
-                                ["Y"] = 2,  // Horizontal position
+                                ["X"] = 6,  // Horizontal position (far from starting location)
+                                ["Y"] = 6,  // Horizontal position
                                 ["Z"] = 3   // Height - on top of 3-layer terrain
                             },
                             ["Orientation"] = "Cw0"
@@ -225,9 +225,9 @@ public class MinimalMapGenerator
         }
 
         Console.WriteLine($"✓ Created minimal map: {timberPath}");
-        Console.WriteLine($"  Size: 4x4 (height 23 - Timberborn standard)");
-        Console.WriteLine($"  Voxels: 368 total (48 solid terrain, 320 air)");
-        Console.WriteLine($"  Entities: 2 (StartingLocation, WaterSource)");
+        Console.WriteLine($"  Size: 8x8 (height 23 - Timberborn standard)");
+        Console.WriteLine($"  Voxels: 1472 total (192 solid terrain, 1280 air)");
+        Console.WriteLine($"  Entities: 2 (StartingLocation at 2,2,3 | WaterSource at 6,6,3)");
         Console.WriteLine($"  File size: {new FileInfo(timberPath).Length / 1024.0:F1} KB");
     }
 }
