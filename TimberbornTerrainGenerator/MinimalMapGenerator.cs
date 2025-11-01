@@ -15,16 +15,19 @@ public class MinimalMapGenerator
 {
     public static void Generate(string outputPath)
     {
-        Console.WriteLine("Generating minimal 4x4x3 test map...");
+        Console.WriteLine("Generating minimal 4x4 test map...");
 
-        // Build voxels array: 4x4x3 = 48 voxels
-        // First 3 layers (y=0,1,2) all solid, rest air
+        // Build voxels array: 4x4x23 = 368 voxels (Timberborn always expects height 23)
+        // First 3 layers (y=0,1,2) all solid, rest air (y=3-22)
+        const int TIMBERBORN_HEIGHT = 23;
+        const int TERRAIN_HEIGHT = 3;
         var voxels = new List<string>();
-        for (int y = 0; y < 3; y++)  // 3 layers high
+
+        for (int y = 0; y < TIMBERBORN_HEIGHT; y++)  // All 23 layers
         for (int z = 0; z < 4; z++)  // 4 deep
         for (int x = 0; x < 4; x++)  // 4 wide
         {
-            voxels.Add("1"); // All solid for first 3 layers
+            voxels.Add(y < TERRAIN_HEIGHT ? "1" : "0"); // Solid for first 3 layers, air above
         }
 
         string voxelsArray = string.Join(" ", voxels);
@@ -172,8 +175,8 @@ public class MinimalMapGenerator
         }
 
         Console.WriteLine($"✓ Created minimal map: {timberPath}");
-        Console.WriteLine($"  Size: 4x4x3");
-        Console.WriteLine($"  Voxels: 48 (all solid)");
+        Console.WriteLine($"  Size: 4x4 (height 23 - Timberborn standard)");
+        Console.WriteLine($"  Voxels: 368 total (48 solid terrain, 320 air)");
         Console.WriteLine($"  Entities: 0 (terrain defined in Voxels array)");
         Console.WriteLine($"  File size: {new FileInfo(timberPath).Length / 1024.0:F1} KB");
     }
