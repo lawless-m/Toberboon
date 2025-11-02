@@ -1,5 +1,6 @@
-import { TerrainGenerator } from './TerrainGenerator';
+import { HybridTerrainGenerator } from './HybridTerrainGenerator';
 import { DEFAULT_CONFIG, GeneratorConfig } from './types';
+import { initWasm, isWasmAvailable } from './wasm-loader';
 
 // Get form elements
 const form = document.getElementById('generator-form') as HTMLFormElement;
@@ -24,6 +25,20 @@ const statEntities = document.getElementById('statEntities') as HTMLSpanElement;
 const statFileSize = document.getElementById('statFileSize') as HTMLSpanElement;
 const statTime = document.getElementById('statTime') as HTMLSpanElement;
 const statSeed = document.getElementById('statSeed') as HTMLSpanElement;
+
+// Initialize WASM on startup
+let wasmReady = false;
+
+(async () => {
+  console.log('🚀 Initializing Timberborn Generator...');
+  wasmReady = await initWasm();
+
+  if (wasmReady) {
+    updateWasmBadge('WASM READY', '#10b981');
+  } else {
+    updateWasmBadge('TypeScript', '#f59e0b');
+  }
+})();
 
 // Handle form submission
 form.addEventListener('submit', async (e) => {
@@ -53,8 +68,8 @@ async function generateTerrain() {
 
     const startTime = performance.now();
 
-    // Create generator
-    const generator = new TerrainGenerator(config);
+    // Create hybrid generator (uses WASM if available)
+    const generator = new HybridTerrainGenerator(config);
 
     // Generate with progress
     const result = await generator.generateWithProgress((stage, progress) => {
@@ -99,11 +114,21 @@ async function generateTerrain() {
   }
 }
 
+// Helper to update WASM badge
+function updateWasmBadge(text: string, color: string) {
+  const badge = document.querySelector('.wasm-badge') as HTMLElement;
+  if (badge) {
+    badge.textContent = text;
+    badge.style.background = color;
+  }
+}
+
 // Initialize
-console.log('🌲 Timberborn Terrain Generator (TypeScript + WASM Proof-of-Concept)');
+console.log('🌲 Timberborn Terrain Generator (Hybrid TypeScript/WASM)');
 console.log('');
-console.log('This is a hybrid architecture proof-of-concept:');
+console.log('This is a hybrid architecture:');
+console.log('  🔥 WASM (when available): VoxelGrid, HeightmapGenerator, CaveGenerator');
 console.log('  ✅ TypeScript: UI, entity placement, export');
-console.log('  🔥 WASM candidates: VoxelGrid, HeightmapGenerator, CaveGenerator');
+console.log('  📦 Graceful fallback: Pure TypeScript if WASM unavailable');
 console.log('');
-console.log('Generate some maps to collect performance data!');
+console.log('Generate some maps to see the performance difference!');

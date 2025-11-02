@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "npm run build:wasm && tsc && vite build",
+    "build:wasm": "cd wasm && wasm-pack build --target web --out-dir ./pkg",
+    "build:ts-only": "tsc && vite build",
+    "preview": "vite preview",
+    "test:wasm": "cd wasm && cargo test"
   },
   "dependencies": {
     "jszip": "^3.10.1",
