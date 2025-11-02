@@ -157,29 +157,119 @@ export class EntityPlacer {
     const treeCount = Math.floor((mapSize * mapSize) * treeDensity / 100);
     const bushCount = Math.floor((mapSize * mapSize) * bushDensity / 100);
 
-    console.log(`  Placing ${treeCount} trees and ${bushCount} bushes...`);
+    console.log(`  Placing ${treeCount} trees and ${bushCount} bushes in clusters...`);
 
     const treeTypes = ['Pine', 'Birch', 'Maple'];
     const bushTypes = ['BlueberryBush'];
 
-    // Place trees
-    for (let i = 0; i < treeCount; i++) {
-      const x = Math.floor(this.random() * mapSize);
-      const y = Math.floor(this.random() * mapSize);
-      const z = this.findSurfaceHeight(grid, x, y);
+    // Place trees in species-specific clusters
+    entities.push(...this.placeTreesInClusters(grid, treeCount, treeTypes));
 
-      const treeType = treeTypes[Math.floor(this.random() * treeTypes.length)];
-      entities.push(this.createTree(x, y, z + 1, treeType));
+    // Place bushes in clusters
+    entities.push(...this.placeBushesInClusters(grid, bushCount, bushTypes));
+
+    return entities;
+  }
+
+  /**
+   * Place trees in natural clusters by species
+   */
+  private placeTreesInClusters(grid: VoxelGrid, totalCount: number, treeTypes: string[]): Entity[] {
+    const entities: Entity[] = [];
+    const { mapSize } = this.config;
+
+    // Calculate how many trees per species
+    const treesPerSpecies = Math.floor(totalCount / treeTypes.length);
+    const remainder = totalCount % treeTypes.length;
+
+    for (let speciesIndex = 0; speciesIndex < treeTypes.length; speciesIndex++) {
+      const species = treeTypes[speciesIndex];
+      const count = treesPerSpecies + (speciesIndex < remainder ? 1 : 0);
+
+      // Create 2-4 cluster centers for this species
+      const clusterCount = Math.max(2, Math.min(4, Math.floor(count / 10)));
+      const clusters: Vector3Int[] = [];
+
+      for (let i = 0; i < clusterCount; i++) {
+        clusters.push({
+          x: Math.floor(this.random() * mapSize),
+          y: Math.floor(this.random() * mapSize),
+          z: 0 // Will be updated when placing
+        });
+      }
+
+      // Place trees around cluster centers
+      for (let i = 0; i < count; i++) {
+        // Pick a random cluster center
+        const cluster = clusters[Math.floor(this.random() * clusters.length)];
+
+        // Cluster radius: 5-15 blocks
+        const radius = 5 + this.random() * 10;
+        const angle = this.random() * Math.PI * 2;
+        const distance = this.random() * radius;
+
+        const x = Math.floor(cluster.x + Math.cos(angle) * distance);
+        const y = Math.floor(cluster.y + Math.sin(angle) * distance);
+
+        // Bounds check
+        if (x < 0 || x >= mapSize || y < 0 || y >= mapSize) {
+          continue;
+        }
+
+        const z = this.findSurfaceHeight(grid, x, y);
+
+        // Skip if underwater or too low
+        if (z < this.config.maxHeight * 0.2) {
+          continue;
+        }
+
+        entities.push(this.createTree(x, y, z + 1, species));
+      }
     }
 
-    // Place bushes
-    for (let i = 0; i < bushCount; i++) {
-      const x = Math.floor(this.random() * mapSize);
-      const y = Math.floor(this.random() * mapSize);
-      const z = this.findSurfaceHeight(grid, x, y);
+    return entities;
+  }
 
+  /**
+   * Place bushes in small clusters
+   */
+  private placeBushesInClusters(grid: VoxelGrid, totalCount: number, bushTypes: string[]): Entity[] {
+    const entities: Entity[] = [];
+    const { mapSize } = this.config;
+
+    // Bushes in smaller, more numerous clusters
+    const clusterCount = Math.max(5, Math.floor(totalCount / 5));
+    const bushesPerCluster = Math.floor(totalCount / clusterCount);
+
+    for (let i = 0; i < clusterCount; i++) {
       const bushType = bushTypes[Math.floor(this.random() * bushTypes.length)];
-      entities.push(this.createBush(x, y, z + 1, bushType));
+
+      // Cluster center
+      const centerX = Math.floor(this.random() * mapSize);
+      const centerY = Math.floor(this.random() * mapSize);
+
+      // Place bushes in tight cluster (2-4 block radius)
+      for (let j = 0; j < bushesPerCluster; j++) {
+        const radius = 2 + this.random() * 2;
+        const angle = this.random() * Math.PI * 2;
+        const distance = this.random() * radius;
+
+        const x = Math.floor(centerX + Math.cos(angle) * distance);
+        const y = Math.floor(centerY + Math.sin(angle) * distance);
+
+        if (x < 0 || x >= mapSize || y < 0 || y >= mapSize) {
+          continue;
+        }
+
+        const z = this.findSurfaceHeight(grid, x, y);
+
+        // Skip if too low
+        if (z < this.config.maxHeight * 0.2) {
+          continue;
+        }
+
+        entities.push(this.createBush(x, y, z + 1, bushType));
+      }
     }
 
     return entities;
