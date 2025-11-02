@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import type { MapData, ParsedMapData, Entity, Coordinates, BlockObjectComponent, WaterSourceComponent } from './types';
+import type { MapData, ParsedMapData, Entity, Coordinates } from './types';
 
 export async function loadTimberFile(file: File): Promise<ParsedMapData> {
   console.log('📦 Loading .timber file:', file.name, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`);
@@ -37,7 +37,6 @@ export async function loadTimberFile(file: File): Promise<ParsedMapData> {
 }
 
 function parseMapData(mapData: MapData): ParsedMapData {
-  const terrainBlocks: Coordinates[] = [];
   const waterSources: Array<{ coords: Coordinates; strength: number }> = [];
   const trees: Array<{ coords: Coordinates; type: string }> = [];
   const bushes: Array<{ coords: Coordinates; type: string }> = [];
@@ -45,14 +44,19 @@ function parseMapData(mapData: MapData): ParsedMapData {
   const treeTemplates = new Set(['Pine', 'Birch', 'Maple', 'ChestnutTree', 'MangroveTree']);
   const bushTemplates = new Set(['BlueberryBush', 'Dandelion']);
 
+  // Parse terrain from Voxels array in TerrainMap singleton
+  const mapSize = {
+    x: mapData.Singletons.MapSize.Size.X,
+    y: mapData.Singletons.MapSize.Size.Y
+  };
+  const terrainBlocks = parseVoxelsToBlocks(mapData.Singletons.TerrainMap.Voxels.Array, mapSize.x, mapSize.y);
+
   // Process entities
   for (const entity of mapData.Entities) {
     const coords = getEntityCoordinates(entity);
     if (!coords) continue;
 
-    if (entity.Template === 'TerrainBlock') {
-      terrainBlocks.push(coords);
-    } else if (entity.Template === 'WaterSource') {
+    if (entity.Template === 'WaterSource') {
       const strength = getWaterSourceStrength(entity);
       waterSources.push({ coords, strength });
     } else if (treeTemplates.has(entity.Template)) {
@@ -63,10 +67,7 @@ function parseMapData(mapData: MapData): ParsedMapData {
   }
 
   return {
-    mapSize: {
-      x: mapData.Singletons.MapSize.Size.X,
-      y: mapData.Singletons.MapSize.Size.Y
-    },
+    mapSize,
     terrainBlocks,
     waterSources,
     trees,
@@ -80,22 +81,41 @@ function parseMapData(mapData: MapData): ParsedMapData {
   };
 }
 
-function getEntityCoordinates(entity: Entity): Coordinates | null {
-  for (const component of entity.Components) {
-    if ('BlockObject' in component) {
-      const blockComponent = component as BlockObjectComponent;
-      return blockComponent.BlockObject.Coordinates;
+function parseVoxelsToBlocks(voxelsString: string, width: number, depth: number): Coordinates[] {
+  // Parse space-separated voxels array
+  const voxels = voxelsString.split(' ').map(v => v === '1');
+  const blocks: Coordinates[] = [];
+
+  const TIMBERBORN_HEIGHT = 23;
+
+  // Voxels are ordered: Z (height 0-22), Y (depth), X (width)
+  let index = 0;
+  for (let z = 0; z < TIMBERBORN_HEIGHT; z++) {
+    for (let y = 0; y < depth; y++) {
+      for (let x = 0; x < width; x++) {
+        if (index < voxels.length && voxels[index]) {
+          blocks.push({ X: x, Y: y, Z: z });
+        }
+        index++;
+      }
     }
+  }
+
+  return blocks;
+}
+
+function getEntityCoordinates(entity: Entity): Coordinates | null {
+  // Components is now a dictionary/object, not an array
+  if (entity.Components.BlockObject) {
+    return entity.Components.BlockObject.Coordinates;
   }
   return null;
 }
 
 function getWaterSourceStrength(entity: Entity): number {
-  for (const component of entity.Components) {
-    if ('WaterSource' in component) {
-      const waterComponent = component as WaterSourceComponent;
-      return waterComponent.WaterSource.SpecifiedStrength;
-    }
+  // Components is now a dictionary/object, not an array
+  if (entity.Components.WaterSource) {
+    return entity.Components.WaterSource.SpecifiedStrength;
   }
   return 1.0; // Default strength
 }

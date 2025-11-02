@@ -1,7 +1,20 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import type { ParsedMapData, Coordinates } from './types';
+import type { VoxelGrid } from '../core/VoxelGrid';
+import type { WasmVoxelGrid } from '../core/WasmVoxelGrid';
+import type { Entity } from '../types';
 
+interface Coordinates {
+  X: number;
+  Y: number;
+  Z: number;
+}
+
+/**
+ * TerrainRenderer - 3D visualization of generated terrain
+ *
+ * Renders generated voxel grids and entities using Three.js
+ */
 export class TerrainRenderer {
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
@@ -10,13 +23,11 @@ export class TerrainRenderer {
   private container: HTMLElement;
 
   constructor(container: HTMLElement) {
-    console.log('🎨 Initializing TerrainRenderer...');
     this.container = container;
 
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB); // Sky blue
-    console.log('✓ Scene created');
 
     // Create camera
     this.camera = new THREE.PerspectiveCamera(
@@ -26,7 +37,6 @@ export class TerrainRenderer {
       1000
     );
     this.camera.position.set(50, 50, 50);
-    console.log('✓ Camera created at position:', this.camera.position);
 
     // Create renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -35,7 +45,6 @@ export class TerrainRenderer {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
-    console.log('✓ WebGL renderer created');
 
     // Add controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -43,24 +52,15 @@ export class TerrainRenderer {
     this.controls.dampingFactor = 0.05;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 500;
-    console.log('✓ Orbit controls initialized');
 
     // Add lights
     this.setupLights();
-    console.log('✓ Lights added');
-
-    // Add grid helper
-    const gridHelper = new THREE.GridHelper(200, 50, 0x444444, 0x222222);
-    this.scene.add(gridHelper);
-    console.log('✓ Grid helper added');
 
     // Handle window resize
     window.addEventListener('resize', () => this.onWindowResize());
 
     // Start animation loop
     this.animate();
-    console.log('✓ Animation loop started');
-    console.log('🎨 TerrainRenderer initialization complete!');
   }
 
   private setupLights() {
@@ -74,63 +74,53 @@ export class TerrainRenderer {
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 500;
-    directionalLight.shadow.camera.left = -100;
-    directionalLight.shadow.camera.right = 100;
-    directionalLight.shadow.camera.top = 100;
-    directionalLight.shadow.camera.bottom = -100;
     this.scene.add(directionalLight);
 
-    // Hemisphere light for better ambient
+    // Hemisphere light
     const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x8B7355, 0.3);
     this.scene.add(hemiLight);
   }
 
-  public loadTerrain(data: ParsedMapData) {
-    console.log('🌍 Loading terrain...', data);
-    console.log(`  Map size: ${data.mapSize.x}×${data.mapSize.y}`);
-    console.log(`  Terrain blocks: ${data.terrainBlocks.length}`);
-    console.log(`  Water sources: ${data.waterSources.length}`);
-    console.log(`  Trees: ${data.trees.length}`);
-    console.log(`  Bushes: ${data.bushes.length}`);
+  /**
+   * Load and render generated terrain
+   */
+  public loadTerrain(grid: VoxelGrid | WasmVoxelGrid, entities: Entity[]) {
+    console.log('🎨 Rendering terrain in 3D viewer...');
+    console.time('render');
 
     // Clear existing terrain
-    console.log('  Clearing existing terrain...');
     this.clearTerrain();
 
+    // Collect voxels for rendering
+    const voxels: Coordinates[] = [];
+    for (const pos of grid.getAllSolidVoxels()) {
+      voxels.push({ X: pos.x, Y: pos.y, Z: pos.z });
+    }
+
+    console.log(`  Rendering ${voxels.length.toLocaleString()} voxels...`);
+
     // Render terrain blocks
-    console.log('  Rendering terrain blocks...');
-    this.renderTerrainBlocks(data.terrainBlocks);
+    this.renderTerrainBlocks(voxels);
 
-    // Render water sources
-    console.log('  Rendering water sources...');
-    this.renderWaterSources(data.waterSources);
-
-    // Render trees
-    console.log('  Rendering trees...');
-    this.renderTrees(data.trees);
-
-    // Render bushes
-    console.log('  Rendering bushes...');
-    this.renderBushes(data.bushes);
+    // Render entities
+    this.renderEntities(entities);
 
     // Center camera on terrain
-    // In Three.js: X=width, Y=height, Z=depth
-    // In Timberborn: X=width, Y=depth, Z=height
-    const centerX = data.mapSize.x / 2;
-    const centerZ = data.mapSize.y / 2;  // Timberborn Y (depth) -> Three.js Z
-    const centerY = 10;  // Look at height 10 in Three.js
-    console.log(`  Centering camera at: (${centerX}, ${centerY}, ${centerZ})`);
+    const width = grid.width;
+    const depth = grid.depth;
+    const centerX = width / 2;
+    const centerZ = depth / 2;
+    const centerY = 10;
+
     this.controls.target.set(centerX, centerY, centerZ);
     this.camera.position.set(centerX + 50, centerY + 50, centerZ + 50);
     this.controls.update();
 
-    console.log('✓ Terrain loaded successfully!');
+    console.timeEnd('render');
+    console.log('✓ 3D rendering complete!');
   }
 
   private clearTerrain() {
-    // Remove all meshes except lights and helpers
     const objectsToRemove: THREE.Object3D[] = [];
     this.scene.traverse((object: THREE.Object3D) => {
       if (object instanceof THREE.Mesh || object instanceof THREE.InstancedMesh) {
@@ -168,67 +158,53 @@ export class TerrainRenderer {
     this.scene.add(instancedMesh);
   }
 
-  private renderWaterSources(sources: Array<{ coords: Coordinates; strength: number }>) {
+  private renderEntities(entities: Entity[]) {
+    for (const entity of entities) {
+      if (!entity.Components.BlockObject) continue;
+
+      const coords = entity.Components.BlockObject.Coordinates;
+
+      if (entity.Template === 'WaterSource') {
+        this.renderWaterSource(coords);
+      } else if (entity.Template === 'StartingLocation') {
+        this.renderStartingLocation(coords);
+      } else if (['Pine', 'Birch', 'Maple', 'ChestnutTree', 'MangroveTree'].includes(entity.Template)) {
+        this.renderTree(coords, entity.Template);
+      } else if (entity.Template === 'BlueberryBush') {
+        this.renderBush(coords);
+      }
+    }
+  }
+
+  private renderWaterSource(coords: Coordinates) {
     const geometry = new THREE.SphereGeometry(0.5, 16, 16);
     const material = new THREE.MeshStandardMaterial({
-      color: 0x1E90FF, // Dodger blue
+      color: 0x1E90FF,
       emissive: 0x1E90FF,
       emissiveIntensity: 0.5,
       transparent: true,
       opacity: 0.8
     });
 
-    sources.forEach(({ coords, strength }) => {
-      const mesh = new THREE.Mesh(geometry, material);
-      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
-      mesh.position.set(coords.X, coords.Z, coords.Y);
-
-      // Scale based on strength
-      const scale = 0.5 + (strength * 0.2);
-      mesh.scale.setScalar(scale);
-
-      this.scene.add(mesh);
-
-      // Add water particles effect
-      this.addWaterParticles(coords, strength);
-    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(coords.X, coords.Z, coords.Y);
+    this.scene.add(mesh);
   }
 
-  private addWaterParticles(coords: Coordinates, strength: number) {
-    const particleCount = Math.floor(strength * 10);
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
-      positions[i * 3] = coords.X + (Math.random() - 0.5) * 2;        // X
-      positions[i * 3 + 1] = coords.Z + Math.random() * 2;            // Y (height in Three.js)
-      positions[i * 3 + 2] = coords.Y + (Math.random() - 0.5) * 2;    // Z (depth in Three.js)
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.PointsMaterial({
-      color: 0x4DD0E1,
-      size: 0.1,
-      transparent: true,
-      opacity: 0.6
+  private renderStartingLocation(coords: Coordinates) {
+    const geometry = new THREE.CylinderGeometry(2, 2, 0.5, 16);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xFFD700,
+      emissive: 0xFFD700,
+      emissiveIntensity: 0.3
     });
 
-    const particles = new THREE.Points(geometry, material);
-    this.scene.add(particles);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(coords.X, coords.Z + 0.25, coords.Y);
+    this.scene.add(mesh);
   }
 
-  private renderTrees(trees: Array<{ coords: Coordinates; type: string }>) {
-    trees.forEach(({ coords, type }) => {
-      const tree = this.createTree(type);
-      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
-      tree.position.set(coords.X, coords.Z, coords.Y);
-      this.scene.add(tree);
-    });
-  }
-
-  private createTree(type: string): THREE.Group {
+  private renderTree(coords: Coordinates, type: string) {
     const tree = new THREE.Group();
 
     // Trunk
@@ -255,36 +231,28 @@ export class TerrainRenderer {
     foliage2.castShadow = true;
     tree.add(foliage2);
 
-    return tree;
+    tree.position.set(coords.X, coords.Z, coords.Y);
+    this.scene.add(tree);
   }
 
   private getTreeColor(type: string): number {
     const colors: { [key: string]: number } = {
-      Pine: 0x228B22,      // Forest green
-      Birch: 0x90EE90,     // Light green
-      Maple: 0xFF6347,     // Tomato (autumn)
-      ChestnutTree: 0x32CD32, // Lime green
-      MangroveTree: 0x2E8B57  // Sea green
+      Pine: 0x228B22,
+      Birch: 0x90EE90,
+      Maple: 0xFF6347,
+      ChestnutTree: 0x32CD32,
+      MangroveTree: 0x2E8B57
     };
     return colors[type] || 0x228B22;
   }
 
-  private renderBushes(bushes: Array<{ coords: Coordinates; type: string }>) {
-    bushes.forEach(({ coords, type }) => {
-      const bush = this.createBush(type);
-      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
-      bush.position.set(coords.X, coords.Z, coords.Y);
-      this.scene.add(bush);
-    });
-  }
-
-  private createBush(type: string): THREE.Mesh {
+  private renderBush(coords: Coordinates) {
     const geometry = new THREE.SphereGeometry(0.3, 8, 8);
-    const color = type === 'BlueberryBush' ? 0x4169E1 : 0xFFD700; // Blue or yellow
-    const material = new THREE.MeshStandardMaterial({ color });
+    const material = new THREE.MeshStandardMaterial({ color: 0x4169E1 });
     const bush = new THREE.Mesh(geometry, material);
+    bush.position.set(coords.X, coords.Z, coords.Y);
     bush.castShadow = true;
-    return bush;
+    this.scene.add(bush);
   }
 
   private animate = () => {
