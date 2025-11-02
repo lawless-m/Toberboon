@@ -301,6 +301,55 @@
 
         <div class="form-group">
           <label class="checkbox-group">
+            <input type="checkbox" id="generateWaterways" checked>
+            <span>Generate Waterways 💧</span>
+          </label>
+          <small style="color: #666; margin-left: 28px;">Realistic winding rivers</small>
+        </div>
+
+        <div class="form-group full-width" id="waterwaySettings" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #f9fafb; border-radius: 8px; margin-top: -10px;">
+          <div style="grid-column: 1 / -1;">
+            <strong style="color: #667eea;">💧 Waterway Settings</strong>
+          </div>
+
+          <div>
+            <label for="waterwayCount" style="font-size: 0.85rem;">Rivers</label>
+            <input type="number" id="waterwayCount" value="2" min="1" max="5" style="padding: 6px;">
+          </div>
+
+          <div>
+            <label for="waterwayWidth" style="font-size: 0.85rem;">Width</label>
+            <select id="waterwayWidth" style="padding: 6px;">
+              <option value="0">Narrow</option>
+              <option value="1" selected>Medium</option>
+              <option value="2">Wide</option>
+              <option value="3">Very Wide</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="waterwayMeandering" style="font-size: 0.85rem;">Meandering</label>
+            <select id="waterwayMeandering" style="padding: 6px;">
+              <option value="0.2">Straight</option>
+              <option value="0.5" selected>Moderate</option>
+              <option value="1.0">Winding</option>
+              <option value="1.5">Very Winding</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="waterwayDepth" style="font-size: 0.85rem;">Depth</label>
+            <select id="waterwayDepth" style="padding: 6px;">
+              <option value="1">Shallow</option>
+              <option value="2" selected>Medium</option>
+              <option value="3">Deep</option>
+              <option value="4">Very Deep</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-group">
             <input type="checkbox" id="generateOverhangs" checked>
             <span>Generate Overhangs</span>
           </label>

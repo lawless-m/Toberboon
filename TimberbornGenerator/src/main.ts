@@ -18,7 +18,14 @@ const maxHeightInput = document.getElementById('maxHeight') as HTMLInputElement;
 const seedInput = document.getElementById('seed') as HTMLInputElement;
 const outputNameInput = document.getElementById('outputName') as HTMLInputElement;
 const generateCavesInput = document.getElementById('generateCaves') as HTMLInputElement;
+const generateWaterwaysInput = document.getElementById('generateWaterways') as HTMLInputElement;
 const generateOverhangsInput = document.getElementById('generateOverhangs') as HTMLInputElement;
+
+// Waterway inputs
+const waterwayCountInput = document.getElementById('waterwayCount') as HTMLInputElement;
+const waterwayWidthInput = document.getElementById('waterwayWidth') as HTMLSelectElement;
+const waterwayDepthInput = document.getElementById('waterwayDepth') as HTMLSelectElement;
+const waterwayMeanderingInput = document.getElementById('waterwayMeandering') as HTMLSelectElement;
 
 // Stats elements
 const statMapSize = document.getElementById('statMapSize') as HTMLSpanElement;
@@ -43,6 +50,12 @@ downloadBtn.addEventListener('click', () => {
     const exporter = new TimberbornExporter();
     exporter.downloadTimber(lastGeneration.blob, lastGeneration.config.outputName);
   }
+});
+
+// Toggle waterway settings visibility
+generateWaterwaysInput.addEventListener('change', () => {
+  const waterwaySettings = document.getElementById('waterwaySettings') as HTMLDivElement;
+  waterwaySettings.style.display = generateWaterwaysInput.checked ? 'grid' : 'none';
 });
 
 // Initialize WASM on startup
@@ -81,7 +94,14 @@ async function generateTerrain() {
       seed: seedInput.value ? parseInt(seedInput.value) : Date.now(),
       outputName: outputNameInput.value,
       generateCaves: generateCavesInput.checked,
-      generateOverhangs: generateOverhangsInput.checked
+      generateWaterways: generateWaterwaysInput.checked,
+      generateOverhangs: generateOverhangsInput.checked,
+
+      // Waterway settings
+      waterwayCount: parseInt(waterwayCountInput.value),
+      waterwayWidth: parseInt(waterwayWidthInput.value),
+      waterwayDepth: parseInt(waterwayDepthInput.value),
+      waterwayMeandering: parseFloat(waterwayMeanderingInput.value),
     };
 
     console.log('🎮 Starting generation with config:', config);

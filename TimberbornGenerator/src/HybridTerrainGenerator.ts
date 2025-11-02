@@ -2,6 +2,7 @@ import { VoxelGrid } from './core/VoxelGrid';
 import { WasmVoxelGrid } from './core/WasmVoxelGrid';
 import { HybridHeightmapGenerator } from './terrain/HybridHeightmapGenerator';
 import { HybridCaveGenerator } from './terrain/HybridCaveGenerator';
+import { WaterwayGenerator } from './terrain/WaterwayGenerator';
 import { EntityPlacer } from './entities/EntityPlacer';
 import { TimberbornExporter } from './export/TimberbornExporter';
 import { GeneratorConfig, Entity } from './types';
@@ -16,16 +17,19 @@ import { isWasmAvailable, tryGetWasmModule } from './wasm-loader';
  * - Cave carving
  *
  * Falls back to TypeScript gracefully if WASM unavailable.
+ * Now includes waterway generation for realistic rivers!
  */
 export class HybridTerrainGenerator {
   private heightmapGen: HybridHeightmapGenerator;
   private caveGen: HybridCaveGenerator;
+  private waterwayGen: WaterwayGenerator;
   private entityPlacer: EntityPlacer;
   private exporter: TimberbornExporter;
 
   constructor(private config: GeneratorConfig) {
     this.heightmapGen = new HybridHeightmapGenerator(config);
     this.caveGen = new HybridCaveGenerator(config);
+    this.waterwayGen = new WaterwayGenerator(config);
     this.entityPlacer = new EntityPlacer(config);
     this.exporter = new TimberbornExporter();
   }
@@ -63,15 +67,21 @@ export class HybridTerrainGenerator {
     const afterCaves = grid.getSolidCount();
     console.log(`  ✓ Carved ${(initialVoxels - afterCaves).toLocaleString()} voxels`);
 
-    // Step 4: Place entities (always TypeScript)
-    const entities = this.entityPlacer.placeAll(grid);
+    // Step 4: Generate waterways (NEW!)
+    const waterwayEntities = this.waterwayGen.generate(grid);
+    const afterWaterways = grid.getSolidCount();
+    console.log(`  ✓ Carved ${(afterCaves - afterWaterways).toLocaleString()} voxels for waterways`);
 
-    // Step 5: Export to .timber (always TypeScript)
+    // Step 5: Place entities (always TypeScript)
+    const placedEntities = this.entityPlacer.placeAll(grid);
+    const entities = [...waterwayEntities, ...placedEntities];
+
+    // Step 6: Export to .timber (always TypeScript)
     const blob = await this.exporter.exportToTimber(grid, entities, this.config);
 
     console.timeEnd('total');
     console.log('✅ Generation complete!');
-    console.log(`  Final voxels: ${afterCaves.toLocaleString()}`);
+    console.log(`  Final voxels: ${afterWaterways.toLocaleString()}`);
     console.log(`  Entities: ${entities.length}`);
     console.log(`  File size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
 
@@ -101,8 +111,12 @@ export class HybridTerrainGenerator {
     onProgress('Carving caves...', 0.5);
     this.caveGen.generate(grid);
 
+    onProgress('Carving waterways...', 0.6);
+    const waterwayEntities = this.waterwayGen.generate(grid);
+
     onProgress('Placing entities...', 0.7);
-    const entities = this.entityPlacer.placeAll(grid);
+    const placedEntities = this.entityPlacer.placeAll(grid);
+    const entities = [...waterwayEntities, ...placedEntities];
 
     onProgress('Exporting .timber file...', 0.9);
     const blob = await this.exporter.exportToTimber(grid, entities, this.config);

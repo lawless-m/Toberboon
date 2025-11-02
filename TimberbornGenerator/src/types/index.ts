@@ -20,6 +20,7 @@ export interface GeneratorConfig {
   // Feature flags
   generateCaves: boolean;
   generateOverhangs: boolean;
+  generateWaterways: boolean;  // NEW: Enable waterway generation
 
   // Terrain settings
   noiseScale: number;     // Base noise scale (0.01 = smooth, 0.1 = rough)
@@ -31,8 +32,16 @@ export interface GeneratorConfig {
   caveCount: number;      // Number of worm tunnels
   caveThreshold: number;  // Noise threshold for caverns (0.0-1.0)
 
+  // Waterway settings (NEW)
+  waterwayCount: number;           // Number of rivers/streams
+  waterwayLength: number;          // Max length in blocks
+  waterwayWidth: number;           // Channel width (0-3)
+  waterwayDepth: number;           // Channel depth (1-5)
+  waterwayMeandering: number;      // Curve amount (0.0-2.0)
+  waterwayWaterSourceSpacing: number;  // Blocks between water sources
+
   // Entity settings
-  waterSourceCount: number;
+  waterSourceCount: number;  // Additional random water sources
   treeDensity: number;    // Trees per 100 blocks
   bushDensity: number;    // Bushes per 100 blocks
 }
@@ -45,6 +54,7 @@ export const DEFAULT_CONFIG: GeneratorConfig = {
 
   generateCaves: true,
   generateOverhangs: true,
+  generateWaterways: true,
 
   noiseScale: 0.02,
   octaves: 4,
@@ -53,6 +63,13 @@ export const DEFAULT_CONFIG: GeneratorConfig = {
 
   caveCount: 5,
   caveThreshold: 0.5,
+
+  waterwayCount: 2,
+  waterwayLength: 100,
+  waterwayWidth: 1,
+  waterwayDepth: 2,
+  waterwayMeandering: 0.5,
+  waterwayWaterSourceSpacing: 10,
 
   waterSourceCount: 3,
   treeDensity: 2.0,
