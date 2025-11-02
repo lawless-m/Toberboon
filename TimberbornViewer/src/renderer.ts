@@ -116,11 +116,14 @@ export class TerrainRenderer {
     this.renderBushes(data.bushes);
 
     // Center camera on terrain
+    // In Three.js: X=width, Y=height, Z=depth
+    // In Timberborn: X=width, Y=depth, Z=height
     const centerX = data.mapSize.x / 2;
-    const centerZ = data.mapSize.y / 2;
-    console.log(`  Centering camera at: (${centerX}, 10, ${centerZ})`);
-    this.controls.target.set(centerX, 10, centerZ);
-    this.camera.position.set(centerX + 50, 50, centerZ + 50);
+    const centerZ = data.mapSize.y / 2;  // Timberborn Y (depth) -> Three.js Z
+    const centerY = 10;  // Look at height 10 in Three.js
+    console.log(`  Centering camera at: (${centerX}, ${centerY}, ${centerZ})`);
+    this.controls.target.set(centerX, centerY, centerZ);
+    this.camera.position.set(centerX + 50, centerY + 50, centerZ + 50);
     this.controls.update();
 
     console.log('✓ Terrain loaded successfully!');
@@ -129,7 +132,7 @@ export class TerrainRenderer {
   private clearTerrain() {
     // Remove all meshes except lights and helpers
     const objectsToRemove: THREE.Object3D[] = [];
-    this.scene.traverse((object) => {
+    this.scene.traverse((object: THREE.Object3D) => {
       if (object instanceof THREE.Mesh || object instanceof THREE.InstancedMesh) {
         objectsToRemove.push(object);
       }
@@ -154,7 +157,10 @@ export class TerrainRenderer {
 
     const matrix = new THREE.Matrix4();
     blocks.forEach((block, i) => {
-      matrix.setPosition(block.X, block.Y, block.Z);
+      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
+      // Timberborn: X=width, Y=depth, Z=height
+      // Three.js: X=width, Y=height, Z=depth
+      matrix.setPosition(block.X, block.Z, block.Y);
       instancedMesh.setMatrixAt(i, matrix);
     });
     instancedMesh.instanceMatrix.needsUpdate = true;
@@ -174,7 +180,8 @@ export class TerrainRenderer {
 
     sources.forEach(({ coords, strength }) => {
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(coords.X, coords.Y, coords.Z);
+      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
+      mesh.position.set(coords.X, coords.Z, coords.Y);
 
       // Scale based on strength
       const scale = 0.5 + (strength * 0.2);
@@ -193,9 +200,10 @@ export class TerrainRenderer {
     const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = coords.X + (Math.random() - 0.5) * 2;
-      positions[i * 3 + 1] = coords.Y + Math.random() * 2;
-      positions[i * 3 + 2] = coords.Z + (Math.random() - 0.5) * 2;
+      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
+      positions[i * 3] = coords.X + (Math.random() - 0.5) * 2;        // X
+      positions[i * 3 + 1] = coords.Z + Math.random() * 2;            // Y (height in Three.js)
+      positions[i * 3 + 2] = coords.Y + (Math.random() - 0.5) * 2;    // Z (depth in Three.js)
     }
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -214,7 +222,8 @@ export class TerrainRenderer {
   private renderTrees(trees: Array<{ coords: Coordinates; type: string }>) {
     trees.forEach(({ coords, type }) => {
       const tree = this.createTree(type);
-      tree.position.set(coords.X, coords.Y, coords.Z);
+      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
+      tree.position.set(coords.X, coords.Z, coords.Y);
       this.scene.add(tree);
     });
   }
@@ -263,7 +272,8 @@ export class TerrainRenderer {
   private renderBushes(bushes: Array<{ coords: Coordinates; type: string }>) {
     bushes.forEach(({ coords, type }) => {
       const bush = this.createBush(type);
-      bush.position.set(coords.X, coords.Y, coords.Z);
+      // Coordinate mapping: Timberborn (X,Y,Z) -> Three.js (X,Z,Y)
+      bush.position.set(coords.X, coords.Z, coords.Y);
       this.scene.add(bush);
     });
   }

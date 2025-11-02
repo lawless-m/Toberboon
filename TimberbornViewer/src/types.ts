@@ -43,7 +43,7 @@ export type EntityComponent =
 export interface Entity {
   Id: string;
   Template: string;
-  Components: EntityComponent[];
+  Components: { [key: string]: any };  // Components is a dictionary/object, not an array
 }
 
 export interface Size {
@@ -55,35 +55,41 @@ export interface MapSize {
   Size: Size;
 }
 
-export interface HeightsArray {
-  Array: string;
+export interface VoxelsArray {
+  Array: string;  // Space-separated string of "1" (solid) and "0" (air)
 }
 
 export interface TerrainMap {
-  Heights: HeightsArray;
+  Voxels: VoxelsArray;
 }
 
-export interface Target {
+export interface Vector3 {
   X: number;
   Y: number;
   Z: number;
 }
 
-export interface CameraState {
-  Target: Target;
-  ZoomLevel: number;
-  HorizontalAngle: number;
-  VerticalAngle: number;
+export interface Quaternion {
+  X: number;
+  Y: number;
+  Z: number;
+  W: number;
 }
 
-export interface CameraComponent {
-  CameraState: CameraState;
+export interface CameraConfiguration {
+  Position: Vector3;
+  Rotation: Quaternion;
+  ShadowDistance: number;
+}
+
+export interface MapThumbnailCameraMover {
+  CurrentConfiguration: CameraConfiguration;
 }
 
 export interface Singletons {
   MapSize: MapSize;
   TerrainMap: TerrainMap;
-  CameraComponent: CameraComponent;
+  MapThumbnailCameraMover?: MapThumbnailCameraMover;  // Optional for backward compatibility
 }
 
 export interface MapData {

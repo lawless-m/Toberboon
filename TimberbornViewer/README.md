@@ -6,11 +6,12 @@ A 3D web-based viewer for Timberborn terrain maps built with TypeScript and Thre
 
 - 📦 Load `.timber` files directly in the browser
 - 🎮 Interactive 3D visualization with camera controls
-- 🌍 Voxel-based terrain rendering
+- 🌍 Voxel-based terrain rendering with full 3D support (caves, overhangs)
 - 💧 Water source visualization with particle effects
 - 🌲 Tree rendering with different species colors
 - 🌿 Bush and vegetation display
 - 📊 Real-time statistics display
+- ✅ Supports Timberborn 0.7.10+ format with proper coordinate system (X,Y horizontal, Z vertical)
 
 ## Installation
 
@@ -75,8 +76,19 @@ TimberbornViewer/
 1. **File Input**: User selects a `.timber` file
 2. **ZIP Extraction**: JSZip extracts `world.json` from the archive
 3. **JSON Parsing**: Map data is parsed into TypeScript types
-4. **Data Processing**: Entities are categorized (terrain, water, trees, bushes)
-5. **3D Rendering**: Three.js renders the scene using instanced meshes for performance
+4. **Voxel Parsing**: Terrain is parsed from the `TerrainMap.Voxels.Array` singleton (space-separated string of 1s and 0s)
+5. **Entity Processing**: Entities are categorized (water sources, trees, bushes)
+6. **Coordinate Mapping**: Timberborn coordinates (X,Y,Z) are mapped to Three.js (X,Z,Y) for proper visualization
+7. **3D Rendering**: Three.js renders the scene using instanced meshes for performance
+
+### Coordinate System
+
+Timberborn uses a specific coordinate system:
+- **X**: Horizontal width
+- **Y**: Horizontal depth
+- **Z**: Vertical height (0-22 layers)
+
+The viewer automatically maps these to Three.js coordinates (where Y is vertical) for correct visualization.
 
 ### Rendering Techniques
 
@@ -110,9 +122,12 @@ The viewer is optimized for large maps:
 
 ### Tested Map Sizes
 
-- ✅ 64×64 maps: ~75K voxels
-- ✅ 128×128 maps: ~500K voxels
-- ✅ 256×256 maps: Should work with modern GPUs
+All maps use exactly 23 vertical layers (Z=0 to Z=22), as per Timberborn format:
+
+- ✅ 32×32 maps: ~23K voxels (e.g., SimpleHills.timber)
+- ✅ 64×64 maps: ~94K voxels (e.g., CaveWorld.timber)
+- ✅ 128×128 maps: ~376K voxels (e.g., LargeMap.timber)
+- ✅ 256×256 maps: ~1.5M voxels (works with modern GPUs)
 
 ## Technology Stack
 
