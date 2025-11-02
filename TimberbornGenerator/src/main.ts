@@ -1,6 +1,8 @@
 import { HybridTerrainGenerator } from './HybridTerrainGenerator';
 import { DEFAULT_CONFIG, GeneratorConfig } from './types';
 import { initWasm, isWasmAvailable } from './wasm-loader';
+import { TerrainRenderer } from './viewer/TerrainRenderer';
+import { TimberbornExporter } from './export/TimberbornExporter';
 
 // Get form elements
 const form = document.getElementById('generator-form') as HTMLFormElement;
@@ -25,6 +27,23 @@ const statEntities = document.getElementById('statEntities') as HTMLSpanElement;
 const statFileSize = document.getElementById('statFileSize') as HTMLSpanElement;
 const statTime = document.getElementById('statTime') as HTMLSpanElement;
 const statSeed = document.getElementById('statSeed') as HTMLSpanElement;
+
+// Viewer elements
+const viewerContainer = document.getElementById('viewer-container') as HTMLDivElement;
+const viewerCanvas = document.getElementById('viewer-canvas') as HTMLDivElement;
+const downloadBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+
+// Initialize 3D viewer
+let renderer: TerrainRenderer | null = null;
+let lastGeneration: { blob: Blob; config: GeneratorConfig } | null = null;
+
+// Download button handler
+downloadBtn.addEventListener('click', () => {
+  if (lastGeneration) {
+    const exporter = new TimberbornExporter();
+    exporter.downloadTimber(lastGeneration.blob, lastGeneration.config.outputName);
+  }
+});
 
 // Initialize WASM on startup
 let wasmReady = false;
@@ -51,6 +70,7 @@ async function generateTerrain() {
   generateBtn.disabled = true;
   progressContainer.style.display = 'block';
   statsContainer.style.display = 'none';
+  viewerContainer.style.display = 'none';
 
   try {
     // Build config from form
@@ -80,9 +100,8 @@ async function generateTerrain() {
     const endTime = performance.now();
     const duration = ((endTime - startTime) / 1000).toFixed(2);
 
-    // Download file
-    const exporter = new (await import('./export/TimberbornExporter')).TimberbornExporter();
-    exporter.downloadTimber(result.blob, config.outputName);
+    // Store generation for download
+    lastGeneration = { blob: result.blob, config };
 
     // Show stats
     statsContainer.style.display = 'block';
@@ -93,7 +112,21 @@ async function generateTerrain() {
     statTime.textContent = `${duration}s`;
     statSeed.textContent = config.seed.toString();
 
-    // Log performance data for WASM decision
+    // Show 3D viewer
+    viewerContainer.style.display = 'block';
+    downloadBtn.style.display = 'block';
+
+    // Initialize renderer if needed
+    if (!renderer) {
+      console.log('🎨 Initializing 3D viewer...');
+      renderer = new TerrainRenderer(viewerCanvas);
+    }
+
+    // Render in 3D viewer
+    console.log('🎨 Rendering terrain in 3D viewer...');
+    renderer.loadTerrain(result.grid, result.entities);
+
+    // Log performance data
     console.log('📊 Performance Metrics:');
     console.log(`  Map size: ${config.mapSize}×${config.mapSize}`);
     console.log(`  Total time: ${duration}s`);
@@ -128,7 +161,7 @@ console.log('🌲 Timberborn Terrain Generator (Hybrid TypeScript/WASM)');
 console.log('');
 console.log('This is a hybrid architecture:');
 console.log('  🔥 WASM (when available): VoxelGrid, HeightmapGenerator, CaveGenerator');
-console.log('  ✅ TypeScript: UI, entity placement, export');
+console.log('  ✅ TypeScript: UI, entity placement, export, 3D viewer');
 console.log('  📦 Graceful fallback: Pure TypeScript if WASM unavailable');
 console.log('');
-console.log('Generate some maps to see the performance difference!');
+console.log('Generate a map and see it instantly in 3D!');

@@ -216,6 +216,47 @@
       font-family: 'Courier New', monospace;
       font-size: 0.85rem;
     }
+
+    #viewer-container {
+      margin-top: 30px;
+      display: none;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    #viewer-canvas {
+      width: 100%;
+      height: 600px;
+      display: block;
+    }
+
+    .viewer-controls {
+      background: #f9fafb;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .viewer-controls button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .viewer-controls button:hover {
+      background: #5568d3;
+    }
+
+    .viewer-info {
+      color: #666;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -314,6 +355,17 @@
       • <code>HeightmapGenerator</code> - CPU-intensive noise sampling<br>
       • <code>CaveGenerator</code> - 3D iteration and noise evaluation<br><br>
       Current implementation is pure TypeScript. Performance data will guide WASM porting decisions.
+    </div>
+
+    <!-- 3D Viewer -->
+    <div id="viewer-container">
+      <div class="viewer-controls">
+        <div class="viewer-info">
+          <strong>🎮 Controls:</strong> Left-click drag = rotate | Right-click drag = pan | Scroll = zoom
+        </div>
+        <button id="downloadBtn" style="display: none;">💾 Download .timber</button>
+      </div>
+      <div id="viewer-canvas"></div>
     </div>
   </div>
 

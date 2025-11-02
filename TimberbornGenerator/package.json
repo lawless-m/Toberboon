@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "fastnoise-lite": "^1.1.1"
+    "fastnoise-lite": "^1.1.1",
+    "three": "^0.160.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
