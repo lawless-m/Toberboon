@@ -124,7 +124,8 @@ public class MinimalMapGenerator
                                 ["X"] = 2,  // Horizontal position (plenty of room)
                                 ["Y"] = 2,  // Horizontal position
                                 ["Z"] = 3   // Height - on top of 3-layer terrain
-                            }
+                            },
+                            ["Orientation"] = "Cw0"
                         }
                     }
                 },
@@ -167,8 +168,8 @@ public class MinimalMapGenerator
         // Build metadata
         var metadata = new MapMetadata
         {
-            Width = 4,
-            Height = 4
+            Width = 8,
+            Height = 8
         };
         string metadataJson = JsonConvert.SerializeObject(metadata, settings);
 

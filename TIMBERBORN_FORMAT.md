@@ -250,8 +250,11 @@ All required singletons in `world.json`:
 
 ### SoilMoistureSimulator
 
+**CRITICAL:** Must include `"Size"` property!
+
 ```json
 "SoilMoistureSimulator": {
+  "Size": 1,
   "MoistureLevels": {
     "Array": "0 0 0 ..."  // width × depth values
   }
@@ -333,6 +336,8 @@ Entities use a **dictionary-based** component structure:
 
 ### StartingLocation
 
+**CRITICAL:** StartingLocation requires specific placement for visibility in-game!
+
 ```json
 {
   "Id": "dc535af8-3cea-43f6-8d8e-166daaa5a30c",
@@ -343,11 +348,18 @@ Entities use a **dictionary-based** component structure:
         "X": 2,
         "Y": 2,
         "Z": 3
-      }
+      },
+      "Orientation": "Cw0"
     }
   }
 }
 ```
+
+**Required for Visibility:**
+1. **Orientation field** - MUST be present in BlockObject (e.g., `"Cw0"`, `"Cw90"`, `"Cw180"`, `"Cw270"`)
+2. **Completely flat terrain** - All blocks in a 6×6 area around the location MUST be at the exact same height (no height variation)
+3. **Clear air space** - At least 3 blocks of air above the entire 6×6 area (prevents cliffs/overhangs from blocking visibility)
+4. **Proper placement** - Entity Z coordinate must be ONE block above solid ground (if ground is at Z=17, entity goes at Z=18)
 
 ### WaterSource
 
@@ -511,6 +523,20 @@ Use `"YYYY-MM-DD HH:mm:ss"`, NOT ISO 8601:
 ### 7. **Entity Placement**
 
 Entities must be placed on **air blocks** (voxel = 0), not inside solid terrain!
+
+### 8. **StartingLocation Visibility Requirements**
+
+StartingLocation won't appear in-game unless ALL of these are met:
+- ✅ `"Orientation"` field present in BlockObject (e.g., `"Cw0"`)
+- ✅ Completely flat 6×6 area (no height differences at all)
+- ✅ Clear air space (3+ blocks) above entire starting area
+- ✅ No cliffs, overhangs, or terrain blocking the location
+
+### 9. **SoilMoistureSimulator Size Field**
+
+Missing `"Size": 1` in SoilMoistureSimulator can cause entity visibility issues:
+- ✅ `"SoilMoistureSimulator": { "Size": 1, "MoistureLevels": {...} }`
+- ❌ `"SoilMoistureSimulator": { "MoistureLevels": {...} }`  // Missing Size!
 
 ---
 

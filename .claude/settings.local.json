@@ -24,7 +24,15 @@
       "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\SimpleHills.timber\" examples )",
       "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\CaveWorld.timber\" examples )",
       "Bash(copy \"C:\\Users\\Matthew.Heath\\OneDrive - Ramsden International\\Documents\\Timberborn\\Maps\\LargeMap.timber\" examples)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(/tmp/4way_formatted.json)",
+      "Bash(for map in SimpleHills CaveWorld LargeMap UltraMinimal)",
+      "Bash(do echo \"=== $map ===\" unzip -p \"/c/Users/Matthew.Heath/OneDrive - Ramsden International/Documents/Timberborn/Maps/$map.timber\" world.json)",
+      "Bash(grep -o '\"\"\"\"SoilMoistureSimulator\"\"\"\":{[^}]*\"\"\"\"Size\"\"\"\":[0-9]*' unzip -p \"/c/Users/Matthew.Heath/OneDrive - Ramsden International/Documents/Timberborn/Maps/$map.timber\" world.json)",
+      "Bash(/tmp/4way.json)",
+      "Bash(/tmp/simplehills.json)",
+      "Bash(py -c:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

@@ -55,6 +55,7 @@ Basic options via command line:
 - `--seed <n>` - Random seed for reproducibility
 - `--no-caves` - Disable cave generation
 - `--no-overhangs` - Disable cliff overhangs
+- `--no-vegetation` - Disable tree and bush generation
 
 Advanced configuration in [GeneratorConfig.cs](TimberbornTerrainGenerator/Config/GeneratorConfig.cs)
 

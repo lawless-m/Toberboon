@@ -25,11 +25,11 @@ public record GeneratorConfig
 
 public record TerrainSettings
 {
-    public float BaseScale { get; init; } = 0.02f;
-    public float BaseAmplitude { get; init; } = 20.0f;
-    public int Octaves { get; init; } = 4;
-    public float Persistence { get; init; } = 0.5f;
-    public float Lacunarity { get; init; } = 2.0f;
+    public float BaseScale { get; init; } = 0.08f;      // Noise frequency - controls feature size
+    public float BaseAmplitude { get; init; } = 1.2f;   // Height variation (>1.0 allows overshoot for dramatic features)
+    public int Octaves { get; init; } = 3;              // Fewer octaves = less smoothing, more dramatic terrain
+    public float Persistence { get; init; } = 0.4f;     // Lower = less blending between octaves
+    public float Lacunarity { get; init; } = 2.5f;      // Higher = more contrast between scales
 }
 
 public record CaveSettings
@@ -65,6 +65,7 @@ public record WaterSourceSettings
 
 public record VegetationSettings
 {
+    public bool Generate { get; init; } = true;
     public int TreeDensityPercent { get; init; } = 30; // % of valid tiles
     public int BushDensityPercent { get; init; } = 15;
     public Dictionary<string, float> TreeTypes { get; init; } = new()

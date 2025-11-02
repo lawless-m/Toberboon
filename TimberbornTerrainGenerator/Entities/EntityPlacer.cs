@@ -12,15 +12,23 @@ public class EntityPlacer
 
         Console.WriteLine("Placing starting location...");
         var startingPlacer = new StartingLocationPlacer();
-        entities.Add(startingPlacer.PlaceStartingLocation(grid, config));
+        var startingLocation = startingPlacer.PlaceStartingLocation(grid, config);
+        entities.Add(startingLocation);
 
         Console.WriteLine("Placing water sources...");
         var waterPlacer = new WaterSourcePlacer();
         entities.AddRange(waterPlacer.PlaceWaterSources(grid, config));
 
-        Console.WriteLine("Placing vegetation...");
-        var vegPlacer = new VegetationPlacer();
-        entities.AddRange(vegPlacer.PlaceVegetation(grid, config));
+        if (config.Entities.Vegetation.Generate)
+        {
+            Console.WriteLine("Placing vegetation...");
+            var vegPlacer = new VegetationPlacer();
+            entities.AddRange(vegPlacer.PlaceVegetation(grid, config, startingLocation));
+        }
+        else
+        {
+            Console.WriteLine("Vegetation disabled - skipping");
+        }
 
         return entities;
     }

@@ -7,14 +7,17 @@ namespace TimberbornTerrainGenerator.Entities;
 
 public class VegetationPlacer
 {
-    public List<Entity> PlaceVegetation(VoxelGrid grid, GeneratorConfig config)
+    public List<Entity> PlaceVegetation(VoxelGrid grid, GeneratorConfig config, Entity startingLocation)
     {
         var entities = new List<Entity>();
         var settings = config.Entities.Vegetation;
         var random = new Random(config.Seed + 4000);
 
-        // Find valid planting locations (solid ground, not water)
-        var validLocations = FindValidPlantingLocations(grid);
+        // Get StartingLocation coordinates
+        var startCoords = GetEntityCoordinates(startingLocation);
+
+        // Find valid planting locations (solid ground, not water, not near StartingLocation)
+        var validLocations = FindValidPlantingLocations(grid, startCoords);
 
         // Calculate tree count
         int treeCount = (int)(validLocations.Count * settings.TreeDensityPercent / 100.0);
@@ -48,13 +51,26 @@ public class VegetationPlacer
         return entities;
     }
 
-    private List<Vector3Int> FindValidPlantingLocations(VoxelGrid grid)
+    private (int X, int Z) GetEntityCoordinates(Entity entity)
+    {
+        var blockObject = (Dictionary<string, object>)entity.Components["BlockObject"];
+        var coordinates = (Dictionary<string, int>)blockObject["Coordinates"];
+        return (coordinates["X"], coordinates["Y"]); // Timberborn Y is grid Z (depth)
+    }
+
+    private List<Vector3Int> FindValidPlantingLocations(VoxelGrid grid, (int X, int Z) startingLocation)
     {
         var locations = new List<Vector3Int>();
+        const int EXCLUSION_RADIUS = 4; // Keep 4 blocks clear around StartingLocation
 
         for (int x = 0; x < grid.Width; x++)
         for (int z = 0; z < grid.Depth; z++)
         {
+            // Skip locations near StartingLocation (Manhattan distance)
+            int distanceToStart = Math.Abs(x - startingLocation.X) + Math.Abs(z - startingLocation.Z);
+            if (distanceToStart < EXCLUSION_RADIUS)
+                continue;
+
             int surfaceY = grid.GetSurfaceHeight(x, z);
             if (surfaceY > 0)
             {

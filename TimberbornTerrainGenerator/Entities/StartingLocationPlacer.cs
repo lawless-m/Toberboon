@@ -70,7 +70,8 @@ public class StartingLocationPlacer
                         ["X"] = location.Value.X,
                         ["Y"] = location.Value.Z,  // Timberborn Y is our Z
                         ["Z"] = Math.Min(location.Value.Y, 22)   // Timberborn Z is our Y (height), clamped to max 22
-                    }
+                    },
+                    ["Orientation"] = "Cw0"
                 }
             }
         };
@@ -153,13 +154,20 @@ public class StartingLocationPlacer
 
             int height = grid.GetSurfaceHeight(x, z);
 
-            // Allow max 1 block height difference
-            if (Math.Abs(height - centerHeight) > 1)
+            // Require completely flat (no height difference) for StartingLocation
+            if (height != centerHeight)
                 return false;
 
             // Make sure ground is solid
             if (grid[new Vector3Int(x, height, z)] != VoxelType.Solid)
                 return false;
+
+            // Ensure air space above (at least 3 blocks clear)
+            for (int y = height + 1; y <= Math.Min(height + 3, grid.Height - 1); y++)
+            {
+                if (grid[new Vector3Int(x, y, z)] != VoxelType.Air)
+                    return false;
+            }
         }
 
         return true;

@@ -63,6 +63,7 @@ class Program
         int? seed = null;
         bool caves = true;
         bool overhangs = true;
+        bool vegetation = true;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -89,6 +90,9 @@ class Program
                 case "--no-overhangs":
                     overhangs = false;
                     break;
+                case "--no-vegetation":
+                    vegetation = false;
+                    break;
                 case "--help":
                     PrintHelp();
                     Environment.Exit(0);
@@ -103,7 +107,11 @@ class Program
             OutputName = outputName,
             Seed = seed ?? Random.Shared.Next(),
             Caves = new CaveSettings { Generate = caves },
-            Overhangs = new OverhangSettings { Generate = overhangs }
+            Overhangs = new OverhangSettings { Generate = overhangs },
+            Entities = new EntitySettings
+            {
+                Vegetation = new VegetationSettings { Generate = vegetation }
+            }
         };
     }
 
@@ -133,6 +141,7 @@ class Program
         Console.WriteLine("  --seed <n>        Random seed for reproducible generation");
         Console.WriteLine("  --no-caves        Disable cave generation");
         Console.WriteLine("  --no-overhangs    Disable overhang generation");
+        Console.WriteLine("  --no-vegetation   Disable tree and bush generation");
         Console.WriteLine("  --help            Show this help message");
         Console.WriteLine("\nExample:");
         Console.WriteLine("  TimberbornTerrainGenerator --size 256 --name MyMap --seed 12345");

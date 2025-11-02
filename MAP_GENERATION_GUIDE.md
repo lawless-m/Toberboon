@@ -18,14 +18,17 @@ The generator uses a multi-tier approach to ensure a playable starting area:
 
 ### What "Flat" Means
 
-- Maximum 1 block height difference across the area
-- Solid ground at all positions
-- Clear air space above (5 blocks minimum)
+**CRITICAL for visibility in-game:**
+- **Completely flat** - No height variation at all (zero tolerance)
+- **Solid ground** at all positions
+- **Clear air space** above (3+ blocks minimum, prevents cliffs/overhangs from blocking)
+- **Vegetation exclusion zone** - 4-block radius around StartingLocation kept clear of trees
 
 ### StartingLocation Placement
 
 - Always placed at the center of the found/created flat area
 - Z coordinate clamped to max 22 (Timberborn's height limit)
+- Includes required `Orientation` field for in-game visibility
 - Logged during generation: `StartingLocation placed at (X, Z) height=Y`
 
 ## Water Placement
@@ -156,35 +159,75 @@ Run validation scripts to check for:
 
 ## Example Maps
 
-### SimpleHills (32x32)
+### SimpleHills (32×32)
 ```bash
 dotnet run -- --size 32 --name SimpleHills --seed 100 --no-caves --height 30
 ```
-- Small starter map
-- Rolling hills, moderate height
-- No caves, some overhangs
-- StartingLocation at height 17
-- ~460 entities
+- **Small starter map** - Perfect for learning
+- Rolling hills with moderate elevation
+- No caves, some overhangs for variety
+- StartingLocation at height 16
+- ~450 entities with vegetation
 
-### CaveWorld (64x64)
+### RollingPlains (48×48)
+```bash
+dotnet run -- --size 48 --name RollingPlains --seed 5555 --no-caves --no-overhangs --height 15
+```
+- **Gentle terrain** - Very flat and easy
+- Minimal height variation for simple building
+- No caves or overhangs
+- StartingLocation at height 8
+- ~1,025 entities with abundant vegetation
+
+### CaveWorld (64×64)
 ```bash
 dotnet run -- --size 64 --name CaveWorld --seed 1234 --height 35
 ```
-- Medium cave-heavy map
-- Complex underground systems
-- Moderate terrain with good flat areas
+- **Medium cave-heavy map** - Exploration focused
+- Complex underground cave systems
+- Moderate terrain with accessible areas
 - StartingLocation at height 18
-- ~1,850 entities
+- ~1,835 entities (includes vegetation)
 
-### LargeMap (128x128)
+### GentleValley (64×64)
+```bash
+dotnet run -- --size 64 --name GentleValley --seed 7777 --no-caves --no-overhangs --height 20
+```
+- **Smooth valley terrain** - Relaxed gameplay
+- Gentle slopes, no extreme features
+- No caves or overhangs
+- StartingLocation at height 10
+- ~1,830 entities with lush vegetation
+
+### MountainPeak (96×96)
+```bash
+dotnet run -- --size 96 --name MountainPeak --seed 3333 --height 45 --no-caves
+```
+- **Dramatic elevation changes** - Challenging
+- High peaks and deep valleys
+- Overhangs but no caves
+- StartingLocation at height 22
+- ~4,140 entities
+
+### LargeMap (128×128)
 ```bash
 dotnet run -- --size 128 --name LargeMap --seed 5678 --height 40
 ```
-- Large exploration map
-- Full features (caves + overhangs)
-- Varied terrain with accessible starting area
-- StartingLocation at height 17
-- ~7,400 entities
+- **Large exploration map** - Epic scale
+- Full features (caves + overhangs + vegetation)
+- Varied terrain with accessible areas
+- StartingLocation at height 19
+- ~7,364 entities
+
+### DeepCaverns (80×80)
+```bash
+dotnet run -- --size 80 --name DeepCaverns --seed 9999 --height 40
+```
+- **Underground focus** - Cave exploration
+- Extensive cave networks
+- Moderate surface with overhangs
+- StartingLocation at height 22
+- ~2,870 entities
 
 ### Recommended Settings
 
