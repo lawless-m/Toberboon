@@ -534,9 +534,22 @@ StartingLocation won't appear in-game unless ALL of these are met:
 
 ### 9. **SoilMoistureSimulator Size Field**
 
-Missing `"Size": 1` in SoilMoistureSimulator can cause entity visibility issues:
-- ✅ `"SoilMoistureSimulator": { "Size": 1, "MoistureLevels": {...} }`
-- ❌ `"SoilMoistureSimulator": { "MoistureLevels": {...} }`  // Missing Size!
+**CRITICAL:** Both soil simulators MUST include `"Size": 1`:
+
+```json
+// Correct format:
+"SoilMoistureSimulator": {
+  "Size": 1,  // Required!
+  "MoistureLevels": { "Array": "..." }
+},
+"SoilContaminationSimulator": {
+  "Size": 1,  // Required!
+  "ContaminationCandidates": { "Array": "..." },
+  "ContaminationLevels": { "Array": "..." }
+}
+```
+
+Missing the `Size` field will cause `IndexOutOfRangeException` when loading the map.
 
 ---
 

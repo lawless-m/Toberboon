@@ -20,12 +20,17 @@ const outputNameInput = document.getElementById('outputName') as HTMLInputElemen
 const generateCavesInput = document.getElementById('generateCaves') as HTMLInputElement;
 const generateWaterwaysInput = document.getElementById('generateWaterways') as HTMLInputElement;
 const generateOverhangsInput = document.getElementById('generateOverhangs') as HTMLInputElement;
+const addVegetationInput = document.getElementById('addVegetation') as HTMLInputElement;
 
 // Waterway inputs
 const waterwayCountInput = document.getElementById('waterwayCount') as HTMLInputElement;
 const waterwayWidthInput = document.getElementById('waterwayWidth') as HTMLSelectElement;
 const waterwayDepthInput = document.getElementById('waterwayDepth') as HTMLSelectElement;
 const waterwayMeanderingInput = document.getElementById('waterwayMeandering') as HTMLSelectElement;
+
+// Vegetation inputs
+const treeDensityInput = document.getElementById('treeDensity') as HTMLInputElement;
+const bushDensityInput = document.getElementById('bushDensity') as HTMLInputElement;
 
 // Stats elements
 const statMapSize = document.getElementById('statMapSize') as HTMLSpanElement;
@@ -56,6 +61,12 @@ downloadBtn.addEventListener('click', () => {
 generateWaterwaysInput.addEventListener('change', () => {
   const waterwaySettings = document.getElementById('waterwaySettings') as HTMLDivElement;
   waterwaySettings.style.display = generateWaterwaysInput.checked ? 'grid' : 'none';
+});
+
+// Toggle vegetation settings visibility
+addVegetationInput.addEventListener('change', () => {
+  const vegetationSettings = document.getElementById('vegetationSettings') as HTMLDivElement;
+  vegetationSettings.style.display = addVegetationInput.checked ? 'grid' : 'none';
 });
 
 // Initialize WASM on startup
@@ -102,6 +113,11 @@ async function generateTerrain() {
       waterwayWidth: parseInt(waterwayWidthInput.value),
       waterwayDepth: parseInt(waterwayDepthInput.value),
       waterwayMeandering: parseFloat(waterwayMeanderingInput.value),
+
+      // Vegetation settings
+      waterSourceCount: addVegetationInput.checked ? 3 : 0,
+      treeDensity: addVegetationInput.checked ? parseInt(treeDensityInput.value) : 0,
+      bushDensity: addVegetationInput.checked ? parseInt(bushDensityInput.value) : 0,
     };
 
     console.log('🎮 Starting generation with config:', config);

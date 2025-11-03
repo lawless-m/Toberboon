@@ -53,12 +53,16 @@ export class EntityPlacer {
       const centerY = Math.floor(grid.depth / 2);
       const z = this.findSurfaceHeight(grid, centerX, centerY);
 
-      return this.createStartingLocation(centerX, centerY, z + 1);
+      // Clamp to max valid height (grid.height - 1)
+      const safeZ = Math.min(z + 1, grid.height - 1);
+      return this.createStartingLocation(centerX, centerY, safeZ);
     }
 
     console.log(`  ✓ Starting location at (${flatArea.x}, ${flatArea.y}, ${flatArea.z})`);
 
-    return this.createStartingLocation(flatArea.x, flatArea.y, flatArea.z + 1);
+    // Clamp to max valid height (grid.height - 1)
+    const safeZ = Math.min(flatArea.z + 1, grid.height - 1);
+    return this.createStartingLocation(flatArea.x, flatArea.y, safeZ);
   }
 
   /**
@@ -140,7 +144,8 @@ export class EntityPlacer {
 
       // Only place on high terrain
       if (z > this.config.maxHeight * 0.5) {
-        sources.push(this.createWaterSource(x, y, z + 1, 1.0));
+        const safeZ = Math.min(z + 1, grid.height - 1);
+        sources.push(this.createWaterSource(x, y, safeZ, 1.0));
       }
     }
 
@@ -223,7 +228,8 @@ export class EntityPlacer {
           continue;
         }
 
-        entities.push(this.createTree(x, y, z + 1, species));
+        const safeZ = Math.min(z + 1, grid.height - 1);
+        entities.push(this.createTree(x, y, safeZ, species));
       }
     }
 
@@ -268,7 +274,8 @@ export class EntityPlacer {
           continue;
         }
 
-        entities.push(this.createBush(x, y, z + 1, bushType));
+        const safeZ = Math.min(z + 1, grid.height - 1);
+        entities.push(this.createBush(x, y, safeZ, bushType));
       }
     }
 
