@@ -133,9 +133,6 @@ public record WaterArray
 
 public record SoilMoistureSimulator
 {
-    [JsonProperty("Size")]
-    public int Size { get; init; } = 1;
-
     [JsonProperty("MoistureLevels")]
     public MoistureArray MoistureLevels { get; init; } = new();
 }
