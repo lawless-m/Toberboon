@@ -30,29 +30,67 @@ export class HeightmapGenerator {
     console.log('🏔️ Generating heightmap...');
     console.time('heightmap');
 
-    const { mapSize, maxHeight, noiseScale } = this.config;
+    const { mapSize } = this.config;
     const heightmap: number[][] = [];
+
+    // CRITICAL: Timberborn has exactly 23 vertical layers (0-22)
+    const TIMBERBORN_MAX_HEIGHT = 22;
+
+    // Use multiple noise octaves for dramatic terrain
+    // Base terrain (large features)
+    const largeNoise = new FastNoiseLite(this.config.seed);
+    largeNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+    largeNoise.SetFractalType(FastNoiseLite.FractalType.FBm);
+    largeNoise.SetFractalOctaves(3);
+    largeNoise.SetFrequency(0.015); // Large features
+
+    // Mountain peaks (sharp features)
+    const peakNoise = new FastNoiseLite(this.config.seed + 1000);
+    peakNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+    peakNoise.SetFractalType(FastNoiseLite.FractalType.Ridged); // Ridged for mountains
+    peakNoise.SetFractalOctaves(4);
+    peakNoise.SetFrequency(0.03); // Medium features
+
+    // Detail noise (small variations)
+    const detailNoise = new FastNoiseLite(this.config.seed + 2000);
+    detailNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+    detailNoise.SetFrequency(0.08); // Fine detail
 
     for (let y = 0; y < mapSize; y++) {
       heightmap[y] = [];
       for (let x = 0; x < mapSize; x++) {
-        // Get noise value (-1 to 1)
-        const noiseValue = this.noise.GetNoise(
-          x * noiseScale,
-          y * noiseScale
-        );
+        // Get multiple noise layers
+        const large = (largeNoise.GetNoise(x, y) + 1) / 2; // 0-1
+        const peak = (peakNoise.GetNoise(x, y) + 1) / 2; // 0-1
+        const detail = (detailNoise.GetNoise(x, y) + 1) / 2; // 0-1
 
-        // Convert to height (0 to maxHeight)
-        // Add base height to avoid flat areas at 0
-        const baseHeight = maxHeight * 0.3;
-        const height = baseHeight + ((noiseValue + 1) / 2) * (maxHeight - baseHeight);
+        // Combine layers with different weights
+        // Use power function to create more dramatic peaks
+        const baseTerrain = Math.pow(large, 1.2); // Slight exaggeration
+        const mountains = Math.pow(peak, 2.0); // Dramatic peaks
+        const variations = detail * 0.15; // Small bumps
 
-        heightmap[y][x] = Math.max(1, Math.min(height, maxHeight));
+        // Mix layers: 60% base + 30% mountains + 10% detail
+        let combined = baseTerrain * 0.6 + mountains * 0.3 + variations;
+
+        // Apply terracing effect for interesting plateaus (optional)
+        const terraceSteps = 6;
+        const terraceStrength = 0.3;
+        const terraced = Math.floor(combined * terraceSteps) / terraceSteps;
+        combined = combined * (1 - terraceStrength) + terraced * terraceStrength;
+
+        // Map to height range with dramatic variation
+        // Keep valleys low (min 2) and peaks high (max 22)
+        const minHeight = 2;
+        const maxHeight = TIMBERBORN_MAX_HEIGHT;
+        const height = minHeight + combined * (maxHeight - minHeight);
+
+        heightmap[y][x] = Math.max(minHeight, Math.min(Math.floor(height), maxHeight));
       }
     }
 
     console.timeEnd('heightmap');
-    console.log(`  ✓ Generated ${mapSize}×${mapSize} heightmap`);
+    console.log(`  ✓ Generated ${mapSize}×${mapSize} heightmap with dramatic terrain (height: 2-${TIMBERBORN_MAX_HEIGHT})`);
 
     return heightmap;
   }

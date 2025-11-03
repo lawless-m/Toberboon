@@ -354,6 +354,30 @@
             <span>Generate Overhangs</span>
           </label>
         </div>
+
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="addVegetation" checked>
+            <span>Add Vegetation 🌲</span>
+          </label>
+          <small style="color: #666; margin-left: 28px;">Trees and bushes</small>
+        </div>
+
+        <div class="form-group full-width" id="vegetationSettings" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #f9fafb; border-radius: 8px; margin-top: -10px;">
+          <div style="grid-column: 1 / -1;">
+            <strong style="color: #667eea;">🌲 Vegetation Settings</strong>
+          </div>
+
+          <div>
+            <label for="treeDensity" style="font-size: 0.85rem;">Tree Density (%)</label>
+            <input type="number" id="treeDensity" value="5" min="0" max="100" style="padding: 6px;">
+          </div>
+
+          <div>
+            <label for="bushDensity" style="font-size: 0.85rem;">Bush Density (%)</label>
+            <input type="number" id="bushDensity" value="3" min="0" max="100" style="padding: 6px;">
+          </div>
+        </div>
       </div>
 
       <button type="submit" class="btn" id="generateBtn">
